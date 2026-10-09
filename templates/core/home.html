@@ -1,0 +1,51 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Product Reviews</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <header>
+        <a class="brand" href="{% url 'home' %}">Product Reviews</a>
+    </header>
+
+    <main>
+        <p class="eyebrow">Find your next favorite</p>
+
+        <h1>Better choices start with honest reviews.</h1>
+
+        <p class="intro">
+            Explore products, share your experience,
+            and learn from others.
+        </p>
+
+        <section aria-labelledby="features-title">
+            <h2 id="features-title">Coming soon</h2>
+
+            <div class="features">
+                <article>
+                    <h3>Discover products</h3>
+                    <p>Browse categories and find products that interest you.</p>
+                </article>
+
+                <article>
+                    <h3>Share your experience</h3>
+                    <p>Rate products and write helpful reviews.</p>
+                </article>
+
+                <article>
+                    <h3>Read with confidence</h3>
+                    <p>Community reports and moderation keep reviews useful.</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        Product Reviews &middot; Built for thoughtful decisions.
+    </footer>
+</body>
+</html>

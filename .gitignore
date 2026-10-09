@@ -1,0 +1,14 @@
+# Python environment and generated files
+.venv/
+__pycache__/
+*.py[cod]
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Local databases and generated assets
+*.sqlite3
+staticfiles/
+media/
