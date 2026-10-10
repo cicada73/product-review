@@ -16,6 +16,7 @@ class ReviewModelTests(TestCase):
     def setUpTestData(cls):
         cls.author = User.objects.create_user(
             username="reviewer",
+            email="review-author@example.com",
             password="TestOnlyPassword123!",
         )
         cls.category = Category.objects.create(
@@ -70,6 +71,7 @@ class ReviewModelTests(TestCase):
 
         another_author = User.objects.create_user(
             username="another-reviewer",
+            email="another-review-author@example.com",
             password="TestOnlyPassword123!",
         )
         self.create_review(author=another_author)
