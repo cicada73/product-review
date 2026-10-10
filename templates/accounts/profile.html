@@ -1,0 +1,51 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your profile | Product Reviews</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <header>
+        <a class="brand" href="{% url 'home' %}">Product Reviews</a>
+    </header>
+
+    <main>
+        <section class="auth-card" aria-labelledby="profile-title">
+            <h1 id="profile-title">Your profile</h1>
+
+            {% if messages %}
+                <div role="status">
+                    {% for message in messages %}
+                        <p class="notice">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <dl class="account-details">
+                <dt>Username</dt>
+                <dd>{{ user.username }}</dd>
+
+                <dt>Email</dt>
+                <dd>{{ user.email }}</dd>
+            </dl>
+
+            <form method="post" action="{% url 'accounts:profile' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Save profile</button>
+            </form>
+
+            <p>
+                <a href="{% url 'accounts:password_change' %}">
+                    Change password
+                </a>
+            </p>
+
+            <p><a href="{% url 'home' %}">Back to home</a></p>
+        </section>
+    </main>
+</body>
+</html>

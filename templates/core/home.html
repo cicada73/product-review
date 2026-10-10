@@ -13,6 +13,13 @@
     </header>
 
     <main>
+        {% if messages %}
+            <div role="status">
+                {% for message in messages %}
+                    <p class="notice">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
         <p class="eyebrow">Find your next favorite</p>
 
         <h1>Better choices start with honest reviews.</h1>
@@ -21,6 +28,25 @@
             Explore products, share your experience,
             and learn from others.
         </p>
+       {% if user.is_authenticated %}
+    <div class="account-controls">
+        <p>
+            Signed in as <strong>{{ user.username }}</strong>.
+        </p>
+        <a href="{% url 'accounts:profile' %}">Your profile</a>
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit">Log out</button>
+        </form>
+    </div>
+{% else %}
+    <div class="account-controls">
+        <a class="button" href="{% url 'accounts:signup' %}">
+            Create an account
+        </a>
+        <a href="{% url 'accounts:login' %}">Log in</a>
+    </div>
+{% endif %}
 
         <section aria-labelledby="features-title">
             <h2 id="features-title">Coming soon</h2>

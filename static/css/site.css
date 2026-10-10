@@ -92,3 +92,94 @@ a:focus-visible {
         padding-top: 36px;
     }
 }
+.auth-card {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 28px;
+    background: white;
+    border: 1px solid #dce5e1;
+    border-radius: 16px;
+}
+
+.auth-card h1 {
+    font-size: 2rem;
+}
+
+.auth-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.auth-card input:not([type="hidden"]) {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #879b93;
+    border-radius: 8px;
+    font: inherit;
+}
+
+.auth-card input:focus-visible {
+    outline: 3px solid #165e4b;
+    outline-offset: 2px;
+}
+
+.auth-card .helptext {
+    display: block;
+    margin-top: 8px;
+    color: #455961;
+    font-size: 0.9rem;
+}
+
+.errorlist {
+    color: #a32020;
+}
+
+button,
+.button {
+    display: inline-block;
+    padding: 12px 20px;
+    background: #165e4b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+button:focus-visible {
+    outline: 3px solid #165e4b;
+    outline-offset: 3px;
+}
+
+.notice {
+    padding: 14px;
+    background: #e4f3ea;
+    border: 1px solid #95bea5;
+    border-radius: 8px;
+}
+.account-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.account-controls p,
+.account-controls form {
+    margin: 0;
+}
+.account-details {
+    overflow-wrap: anywhere;
+}
+
+.account-details dt {
+    margin-top: 16px;
+    font-weight: 600;
+}
+
+.account-details dd {
+    margin: 6px 0 20px;
+    color: #455961;
+}

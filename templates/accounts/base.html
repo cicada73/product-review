@@ -1,0 +1,21 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Account{% endblock %} | Product Reviews</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <header>
+        <a class="brand" href="{% url 'home' %}">Product Reviews</a>
+    </header>
+
+    <main>
+        <section class="auth-card" aria-labelledby="account-title">
+            {% block content %}{% endblock %}
+        </section>
+    </main>
+</body>
+</html>

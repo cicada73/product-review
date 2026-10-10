@@ -1,0 +1,32 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Login temporarily blocked | Product Reviews{% endblock %}
+
+{% block content %}
+<h1 id="account-title">Login temporarily blocked</h1>
+
+<p>
+    Too many unsuccessful login attempts were made for this account
+    from your connection.
+</p>
+
+<p>
+    Wait 15 minutes before trying again.
+    Further unsuccessful attempts may extend the waiting period.
+</p>
+
+<p>
+    If you have forgotten your password,
+    you can request a password reset.
+</p>
+
+<p>
+    <a href="{% url 'accounts:password_reset' %}">
+        Reset your password
+    </a>
+</p>
+
+<p>
+    <a href="{% url 'accounts:login' %}">Return to login</a>
+</p>
+{% endblock %}
