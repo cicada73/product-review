@@ -1,0 +1,47 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Log in | Product Reviews</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <header>
+        <a class="brand" href="{% url 'home' %}">Product Reviews</a>
+    </header>
+
+    <main>
+        <section class="auth-card" aria-labelledby="login-title">
+            <h1 id="login-title">Log in</h1>
+            <p>Welcome back to Product Reviews.</p>
+
+            <form method="post" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+
+                <button type="submit">Log in</button>
+            </form>
+            <p>
+                <a href="{% url 'accounts:password_reset' %}">
+                    Forgot your password?
+                </a>
+            </p>
+
+            <p>
+                New here?
+                <a href="{% url 'accounts:signup' %}">
+                    Create an account
+                </a>
+            </p>
+
+            <p><a href="{% url 'home' %}">Back to home</a></p>
+        </section>
+    </main>
+</body>
+</html>

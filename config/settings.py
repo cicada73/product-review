@@ -15,7 +15,7 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
-
+from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=False)
@@ -42,6 +42,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'axes',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware'
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -147,3 +149,49 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "accounts:login"
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "Product Reviews <noreply@example.com>"
+PASSWORD_RESET_TIMEOUT = 3600
+
+# Store login sessions in the database.
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+
+# Session lifetime: one hour.
+SESSION_COOKIE_AGE = 60 * 60
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = False
+
+# Protect the session cookie.
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+
+# Protect the CSRF cookie.
+CSRF_COOKIE_SAMESITE = "Lax"
+
+# Require HTTPS for cookies when DEBUG is False.
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+# Check login attempts before authenticating credentials.
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# Track failed logins in MySQL.
+AXES_HANDLER = "axes.handlers.database.AxesDatabaseHandler"
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(minutes=15)
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_RESET_ON_SUCCESS = True
+
+# Show a friendly response when a login is blocked.
+AXES_HTTP_RESPONSE_CODE = 429
+AXES_LOCKOUT_TEMPLATE = "accounts/lockout.html"
+
+# Use the direct connection's IP address during local development.
+AXES_IPWARE_META_PRECEDENCE_ORDER = ("REMOTE_ADDR",)

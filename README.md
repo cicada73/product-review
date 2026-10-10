@@ -132,3 +132,55 @@ Create sample categories and products:
 The command preserves existing records and can be run repeatedly.
 
 The complete test suite currently contains 18 tests.
+
+## Part 3 — User accounts and authentication
+
+Implemented:
+
+- Signup with unique email addresses and password validation.
+- Username/password login and POST-only logout.
+- Profile editing for first and last names.
+- Password changes that preserve the current session and invalidate
+  other sessions.
+- Password reset links with a one-hour expiry.
+- Database-backed sessions with a one-hour lifetime.
+- HttpOnly session cookies and SameSite=Lax cookies.
+- HTTPS-only session and CSRF cookies when DEBUG is disabled.
+- Login protection using Django Axes.
+
+### Login protection
+
+Five failed attempts for the same username and IP address trigger a
+15-minute lockout. Successful login before lockout resets the failure
+counter. Further failed attempts may extend the waiting period.
+
+During local development, client IP detection uses REMOTE_ADDR.
+Proxy settings must be reviewed before production deployment.
+
+To clear a development lockout, replace YOUR_USERNAME below:
+
+```bat
+.\.venv\Scripts\python.exe manage.py axes_reset_username YOUR_USERNAME
+```
+
+### Local password reset emails
+
+Development uses Django's console email backend. Password reset emails
+appear in the runserver terminal; they are not delivered to an inbox.
+
+Production email delivery will be configured during deployment.
+
+### Local database
+
+MySQL is available on localhost port 3307.
+The database container uses port 3306 internally.
+
+### Verification
+
+The full suite currently contains 61 tests covering the foundation,
+catalog, reviews, account flows, CSRF protection, password reset,
+session invalidation, and login lockouts.
+
+```bat
+.\.venv\Scripts\python.exe manage.py test --keepdb --verbosity 2
+```
