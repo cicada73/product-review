@@ -106,3 +106,29 @@ MySQL initialization settings apply when its data volume is first created.
 Changing a password in `.env` does not update an existing MySQL account.
 
 This setup is for local development. Production deployment comes later.
+
+
+
+## Part 2: Database Foundation
+
+Implemented:
+
+- Category and Product models with unique slugs.
+- Optional product image uploads.
+- Product archival through the active flag.
+- Review model with pending, approved, and rejected statuses.
+- One review per author per product.
+- Database constraints for ratings and review statuses.
+- Protected deletion of referenced categories, products, and authors.
+- Catalog and review administration.
+- Model constraint tests and demo-data command tests.
+
+Create sample categories and products:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py seed_demo
+```
+
+The command preserves existing records and can be run repeatedly.
+
+The complete test suite currently contains 18 tests.
