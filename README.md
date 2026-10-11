@@ -219,3 +219,42 @@ Run against a fresh test database:
 ```bat
 .\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
 ```
+
+## Part 5 — Review submission and management
+
+Implemented:
+
+- Authenticated review submission for active products.
+- Ratings from 1 to 5.
+- Review titles between 5 and 200 characters.
+- Review bodies between 20 and 5,000 characters.
+- One review per user per product, enforced by the database.
+- New reviews saved as Pending.
+- Authors can edit their own reviews.
+- Valid edits return reviews to Pending for approval again.
+- Invalid edits leave existing content and approval status unchanged.
+- Author, product, and approval status cannot be chosen through form data.
+- CSRF protection for submission and editing.
+- Private My reviews dashboard with all approval statuses.
+- Dashboard pagination with 10 reviews per page.
+- Reviews of inactive products remain visible to their author,
+  but editing is disabled.
+
+Pending and rejected reviews are excluded from public reviews and
+rating calculations.
+
+### Routes
+
+- `/reviews/` — My reviews dashboard
+- `/reviews/products/PRODUCT_SLUG/new/` — submit a review
+- `/reviews/REVIEW_ID/edit/` — edit your own review
+
+### Verification
+
+The full suite currently contains 119 tests, including form validation,
+submission, ownership checks, reapproval, CSRF protection, dashboard
+privacy, and pagination.
+
+```bat
+.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
+```

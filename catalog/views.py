@@ -81,6 +81,14 @@ def product_detail(request, slug):
     paginator = Paginator(approved_reviews, 10)
     review_page = paginator.get_page(request.GET.get("page"))
 
+    user_review = None
+
+    if request.user.is_authenticated:
+        user_review = Review.objects.filter(
+            product=product,
+            author=request.user,
+        ).first()
+
     return render(
         request,
         "catalog/product_detail.html",
@@ -88,5 +96,6 @@ def product_detail(request, slug):
             "product": product,
             "rating_summary": rating_summary,
             "review_page": review_page,
+            "user_review": user_review,
         },
     )

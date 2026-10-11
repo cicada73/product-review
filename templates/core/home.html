@@ -38,6 +38,7 @@
             Signed in as <strong>{{ user.username }}</strong>.
         </p>
         <a href="{% url 'accounts:profile' %}">Your profile</a>
+        <a href="{% url 'reviews:my_reviews' %}">My reviews</a>
         <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
             <button type="submit">Log out</button>

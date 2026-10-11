@@ -14,7 +14,11 @@
             <span aria-hidden="true"> / </span>
             <a href="{% url 'catalog:product_list' %}">Products</a>
         </nav>
-
+        {% if messages %}
+            {% for message in messages %}
+                <p class="notice" role="status">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
         <article class="product-detail">
             {% if product.image %}
                 <img
@@ -46,6 +50,18 @@
                 {% else %}
                     <p>No approved reviews yet.</p>
                 {% endif %}
+
+                <p>
+                    {% if user_review %}
+                        <a href="{% url 'reviews:review_edit' pk=user_review.pk %}">
+                            Edit my review
+                        </a>
+                    {% else %}
+                        <a href="{% url 'reviews:review_create' slug=product.slug %}">
+                            Write a review
+                        </a>
+                    {% endif %}
+                </p>
             </header>
 
             <section aria-labelledby="description-heading">

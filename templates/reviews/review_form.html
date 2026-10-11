@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        {% if is_edit %}Edit review{% else %}Write a review{% endif %}
+        | Product Reviews
+    </title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <main class="catalog-page">
+        <nav aria-label="Main navigation">
+            <a href="{% url 'catalog:product_detail' slug=product.slug %}">
+                Back to {{ product.name }}
+            </a>
+        </nav>
+
+        <section class="review-editor" aria-labelledby="review-heading">
+            <h1 id="review-heading">
+                {% if is_edit %}
+                    Edit your review of {{ product.name }}
+                {% else %}
+                    Review {{ product.name }}
+                {% endif %}
+            </h1>
+
+            {% if is_edit %}
+                <p>
+                    Saving changes returns your review to pending approval.
+                    It will appear publicly after approval again.
+                </p>
+            {% else %}
+                <p>
+                    Share your experience with this product.
+                    Your review will appear publicly after approval.
+                </p>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <button type="submit">
+                    {% if is_edit %}
+                        Save changes
+                    {% else %}
+                        Submit review
+                    {% endif %}
+                </button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
