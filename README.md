@@ -184,3 +184,38 @@ session invalidation, and login lockouts.
 ```bat
 .\.venv\Scripts\python.exe manage.py test --keepdb --verbosity 2
 ```
+
+## Part 4 — Public product catalog
+
+Implemented:
+
+- Public listing of active products, with 12 products per page.
+- Search by product name, brand, or description.
+- Category filtering that works alongside search.
+- Pagination links that preserve search and category selections.
+- Product detail pages with full descriptions and optional images.
+- Approved review counts and average ratings on listings and details.
+- Approved reviews displayed newest first, with 10 reviews per page.
+- Rating summaries calculated across all approved reviews.
+- Inactive products and unknown product/category URLs return 404.
+- Product and review text is HTML-escaped.
+- Homepage link to the catalog.
+
+Pending and rejected reviews are excluded from public review lists,
+counts, and average ratings.
+
+### Routes
+
+- `/products/` — product listing
+- `/products/?q=SEARCH&category=CATEGORY_SLUG` — filtered listing
+- `/products/PRODUCT_SLUG/` — product details and approved reviews
+
+### Verification
+
+The full test suite currently contains 82 tests.
+
+Run against a fresh test database:
+
+```bat
+.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
+```

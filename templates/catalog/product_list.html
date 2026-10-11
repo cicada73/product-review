@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Products | Product Reviews</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <main class="catalog-page">
+        <nav aria-label="Main navigation">
+            <a href="{% url 'home' %}">Home</a>
+        </nav>
+
+        <header class="catalog-heading">
+            <h1>Browse products</h1>
+            <p>Explore products and find your next purchase.</p>
+            <p>
+                {{ page_obj.paginator.count }}
+                product{{ page_obj.paginator.count|pluralize }}
+                available
+            </p>
+        </header>
+        <form
+    method="get"
+    action="{% url 'catalog:product_list' %}"
+    class="catalog-filters"
+    role="search"
+    aria-label="Find products"
+>
+    <div class="catalog-filter-field">
+        <label for="product-search">Search products</label>
+        <input
+            type="search"
+            id="product-search"
+            name="q"
+            value="{{ query }}"
+            maxlength="200"
+            placeholder="Name, brand, or description"
+        >
+    </div>
+
+    <div class="catalog-filter-field">
+        <label for="category-filter">Category</label>
+        <select id="category-filter" name="category">
+            <option value="">All categories</option>
+
+            {% for category in categories %}
+                <option
+                    value="{{ category.slug }}"
+                    {% if category.slug == selected_category %}selected{% endif %}
+                >
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit">Apply filters</button>
+
+    <a href="{% url 'catalog:product_list' %}">
+        Clear filters
+    </a>
+</form>
+        <section class="catalog-grid" aria-label="Products">
+            {% for product in page_obj %}
+                <article class="catalog-card">
+                    {% if product.image %}
+                        <img
+                            class="catalog-image"
+                            src="{{ product.image.url }}"
+                            alt="{{ product.name }}"
+                            loading="lazy"
+                        >
+                    {% endif %}
+
+                    <p class="catalog-category">
+                        {{ product.category.name }}
+                    </p>
+
+                    <h2>
+                        <a href="{% url 'catalog:product_detail' slug=product.slug %}">
+                            {{ product.name }}
+                        </a>
+                    </h2>
+                    {% if product.review_count %}
+                        <p class="product-rating">
+                            {{ product.average_rating|floatformat:1 }} out of 5·
+                    {{ product.review_count }}
+                    review{{ product.review_count|pluralize }}
+                        </p>
+                    {% else %}
+                        <p>No approved reviews yet.</p>
+                    {% endif %}
+                    {% if product.brand %}
+                        <p>Brand: {{ product.brand }}</p>
+                    {% endif %}
+
+                    <p>{{ product.description|truncatewords:30 }}</p>
+                </article>
+            {% empty %}
+                <p>No products match your search or category selection.</p>
+            {% endfor %}
+        </section>
+
+        {% if page_obj.has_other_pages %}
+            <nav class="catalog-pagination" aria-label="Product pages">
+                {% if page_obj.has_previous %}
+                    <a href="{% querystring page=page_obj.previous_page_number %}">
+                        Previous
+                    </a>
+                {% endif %}
+
+                <span>
+                    Page {{ page_obj.number }}
+                    of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="{% querystring page=page_obj.next_page_number %}">
+                        Next
+                    </a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </main>
+</body>
+</html>
