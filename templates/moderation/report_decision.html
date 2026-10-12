@@ -1,0 +1,77 @@
+{% extends "moderation/base.html" %}
+
+{% block title %}Report decision{% endblock %}
+
+{% block content %}
+<article class="review-card">
+    <h1>Report #{{ report.pk }}</h1>
+    <p>Reported by {{ report.reporter.username }}</p>
+    <p>Reason: {{ report.get_reason_display }}</p>
+    <p>Report status: {{ report.get_status_display }}</p>
+
+    <h2>Report details</h2>
+    <div class="review-body">
+        {{ report.details|default:"No additional details."|linebreaksbr }}
+    </div>
+</article>
+
+<article class="review-card">
+    <h2>{{ report.review.title }}</h2>
+    <p>Product: {{ report.review.product.name }}</p>
+    <p>Review author: {{ report.review.author.username }}</p>
+    <p>Rating: {{ report.review.rating }} out of 5</p>
+    <p>Review status: {{ report.review.get_status_display }}</p>
+
+    <div class="review-body">
+        {{ report.review.body|linebreaksbr }}
+    </div>
+
+    {% if perms.moderation.moderate_reviews %}
+        <p>
+            <a href="{% url 'moderation:review_decision' pk=report.review.pk %}">
+                Open review approval/rejection
+            </a>
+        </p>
+    {% endif %}
+</article>
+
+{% if report.status == "open" %}
+    <section class="review-editor" aria-labelledby="outcome-heading">
+        <h2 id="outcome-heading">Close this report</h2>
+        <p>
+            Resolved means the concern has been addressed.
+            Dismissed means no action is needed.
+            Closing the report does not change the review's status.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save report outcome</button>
+        </form>
+
+        <p>
+            If you change the review's status, reload this report
+            before recording its outcome.
+        </p>
+        <a href="{% url 'moderation:report_decision' pk=report.pk %}">
+            Reload latest report
+        </a>
+    </section>
+{% else %}
+    <section class="review-card" aria-labelledby="closed-heading">
+        <h2 id="closed-heading">Report closed</h2>
+        {{ form.non_field_errors }}
+
+        <p>Closed by {{ report.resolved_by.username }}</p>
+        <p>
+            <time datetime="{{ report.resolved_at|date:'c' }}">
+                {{ report.resolved_at|date:"F j, Y, g:i a" }}
+            </time>
+        </p>
+        <div class="review-body">
+            {{ report.resolution_note|linebreaksbr }}
+        </div>
+    </section>
+{% endif %}
+{% endblock %}

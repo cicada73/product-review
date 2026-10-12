@@ -258,3 +258,62 @@ privacy, and pagination.
 ```bat
 .\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
 ```
+
+## Part 6 — Moderation, reporting, and account management
+
+Implemented:
+
+- Review Moderators role for review decisions and report handling.
+- Account Managers role for suspension and restoration.
+- Permission checks in both views and service functions.
+- Review approval/rejection with mandatory reasons.
+- Moderators cannot decide their own reviews.
+- Reporting of other users' approved reviews on active products.
+- One report per user per review, including after closure.
+- Report resolution/dismissal with moderator, timestamp, and note.
+- Moderators cannot decide their own reports or reports about their reviews.
+- Stale review, report, and account decisions are rejected.
+- State changes and audit entries share atomic transactions.
+- Account suspension/restoration with mandatory reasons.
+- Session versioning prevents restoration from reviving old sessions.
+- Staff, superusers, and the acting manager's own account are protected.
+- Review, report, and audit records are read-only in Django admin.
+- Account activation and session version are read-only in user admin.
+- CSRF protection on action forms.
+
+Reporting and closing reports do not change review approval status.
+Existing approved reviews remain public when an account is suspended
+unless separately rejected.
+
+### Role setup
+
+After applying migrations, run:
+
+```bat
+.\.venv\Scripts\python.exe manage.py setup_roles
+```
+
+This repeatable command sets each role's permissions to its configured
+list. Assign users to groups through Django admin.
+
+Role membership does not automatically grant staff or superuser status.
+
+### Routes
+
+- `/moderation/` — review moderation queue
+- `/moderation/reviews/REVIEW_ID/` — approve/reject a review
+- `/moderation/reviews/REVIEW_ID/report/` — report a public review
+- `/moderation/reports/` — report queue
+- `/moderation/reports/REPORT_ID/` — resolve/dismiss a report
+- `/moderation/accounts/` — account management
+- `/moderation/accounts/USER_ID/` — suspend/restore an account
+
+### Verification
+
+The full suite currently contains 218 tests. Moderation coverage includes
+permissions, database constraints, conflict checks, stale decisions,
+audit rollback, CSRF protection, session invalidation, and admin controls.
+
+```bat
+.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
+```

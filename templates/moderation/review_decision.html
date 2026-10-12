@@ -1,0 +1,41 @@
+{% extends "moderation/base.html" %}
+
+{% block title %}Review decision{% endblock %}
+
+{% block content %}
+<article class="review-card">
+    <h1>{{ review.title }}</h1>
+
+    <p>Product: {{ review.product.name }}</p>
+    <p>Author: {{ review.author.username }}</p>
+    <p>Rating: {{ review.rating }} out of 5</p>
+    <p>Current status: {{ review.get_status_display }}</p>
+
+    {% if not review.product.is_active %}
+        <p>This product is inactive. Approval is unavailable.</p>
+    {% endif %}
+
+    {% if not review.author.is_active %}
+        <p>This author's account is inactive. Approval is unavailable.</p>
+    {% endif %}
+
+    <div class="review-body">{{ review.body|linebreaksbr }}</div>
+</article>
+
+<section class="review-editor" aria-labelledby="decision-heading">
+    <h2 id="decision-heading">Record your decision</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save decision</button>
+    </form>
+
+    <p>
+        If the review has changed, reload its latest version before deciding.
+    </p>
+    <a href="{% url 'moderation:review_decision' pk=review.pk %}">
+        Reload latest review
+    </a>
+</section>
+{% endblock %}

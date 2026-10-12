@@ -39,6 +39,21 @@
         </p>
         <a href="{% url 'accounts:profile' %}">Your profile</a>
         <a href="{% url 'reviews:my_reviews' %}">My reviews</a>
+        {% if perms.moderation.manage_reports %}
+            <a href="{% url 'moderation:report_queue' %}">
+                Reported reviews
+            </a>
+        {% endif %}
+        {% if perms.moderation.suspend_users %}
+            <a href="{% url 'moderation:account_list' %}">
+                 Account management
+            </a>
+        {% endif %}
+        {% if perms.moderation.moderate_reviews %}
+            <a href="{% url 'moderation:review_queue' %}">
+                Review moderation
+            </a>
+        {% endif %}
         <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
             <button type="submit">Log out</button>
