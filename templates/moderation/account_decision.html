@@ -1,0 +1,35 @@
+{% extends "moderation/base.html" %}
+
+{% block title %}Manage account{% endblock %}
+
+{% block content %}
+<section class="review-editor" aria-labelledby="account-heading">
+    <h1 id="account-heading">Manage {{ account.username }}</h1>
+
+    <p>
+        Current state:
+        {% if account.is_active %}Active{% else %}Suspended{% endif %}
+    </p>
+
+    <p>
+        Suspension blocks login and invalidates existing sessions.
+        Restoration requires the user to sign in again.
+    </p>
+
+    <p>
+        Existing approved reviews remain public unless separately rejected.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save account action</button>
+    </form>
+
+    <p>
+        <a href="{% url 'moderation:account_decision' pk=account.pk %}">
+            Reload latest account state
+        </a>
+    </p>
+</section>
+{% endblock %}

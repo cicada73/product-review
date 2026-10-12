@@ -89,6 +89,13 @@
                     <div class="review-body">
                         {{ review.body|linebreaksbr }}
                     </div>
+                    {% if review.author_id != user.pk %}
+                        <p>
+                            <a href="{% url 'moderation:report_create' pk=review.pk %}">
+                            Report review
+                            </a>
+                        </p>
+                    {% endif %}
                 </article>
             {% empty %}
                 <p>There are no approved reviews to display.</p>

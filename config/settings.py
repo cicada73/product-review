@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'catalog.apps.CatalogConfig',
     'reviews.apps.ReviewsConfig',
+    'moderation.apps.ModerationConfig',
     'django.contrib.staticfiles',
 ]
 AUTH_USER_MODEL = "accounts.User"

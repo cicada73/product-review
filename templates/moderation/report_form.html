@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Report a review | Product Reviews</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <main class="catalog-page">
+        <nav aria-label="Main navigation">
+            <a href="{% url 'catalog:product_detail' slug=review.product.slug %}">
+                Back to {{ review.product.name }}
+            </a>
+        </nav>
+
+        <article class="review-card">
+            <h2>{{ review.title }}</h2>
+            <p>Review by {{ review.author.username }}</p>
+            <div class="review-body">
+                {{ review.body|linebreaksbr }}
+            </div>
+        </article>
+
+        <section class="review-editor" aria-labelledby="report-heading">
+            <h1 id="report-heading">Report this review</h1>
+            <p>
+                Select a reason and explain the problem if needed.
+                A moderator will review your report.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Submit report</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
