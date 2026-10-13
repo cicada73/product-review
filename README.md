@@ -317,3 +317,68 @@ audit rollback, CSRF protection, session invalidation, and admin controls.
 ```bat
 .\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
 ```
+
+# Part 7 — Manual usability checks
+
+Mark each item complete only after checking it.
+
+- [ ] Main user flows work using only the keyboard.
+- [ ] Focus is visible on links, buttons, inputs, and selects.
+- [ ] No keyboard traps were found.
+- [ ] Pages remain usable at 320px and 390px widths.
+- [ ] Moderation pages remain usable on narrow screens.
+- [ ] Pages remain usable at 200% browser zoom.
+- [ ] Form fields have understandable visible labels.
+- [ ] Validation errors are clear and preserve entered values.
+- [ ] Review and report statuses are communicated using text.
+
+Issues found and fixes:
+- no issues
+These checks are a basic usability review, not a full accessibility audit.
+
+## Part 7 — Browser testing and quality assurance
+
+Implemented Chromium browser tests covering:
+
+- Homepage-to-product navigation.
+- Search, category filters, and pagination.
+- Signup, profile editing, login, and logout.
+- Review submission, moderator approval, and editing back to Pending.
+- Reporting and report resolution through separate browser sessions.
+- Account suspension/restoration and old-session invalidation.
+- Keyboard operation of the search form.
+- Public-page overflow checks at 320px and 390px widths.
+
+Browser tests use Django's temporary live server and test database.
+GitHub Actions installs Chromium and its Linux dependencies.
+
+Manual keyboard, mobile, zoom, and form checks are recorded in
+`docs/part-7-manual-checks.md`. These are basic usability checks,
+not a full accessibility audit.
+
+### Development setup
+
+```bat
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m playwright install chromium
+```
+
+### Run tests
+
+All 228 tests:
+
+```bat
+.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
+```
+
+Only the 10 browser tests:
+
+```bat
+.\.venv\Scripts\python.exe manage.py test --tag=browser --keepdb --verbosity 2
+```
+
+Application tests without browser execution:
+
+```bat
+.\.venv\Scripts\python.exe manage.py test --exclude-tag=browser --keepdb --verbosity 2
+```
