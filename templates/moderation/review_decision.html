@@ -1,41 +1,85 @@
 {% extends "moderation/base.html" %}
 
-{% block title %}Review decision{% endblock %}
+{% block title %}Review decision · Product Reviews{% endblock %}
 
 {% block content %}
-<article class="review-card">
-    <h1>{{ review.title }}</h1>
+    <nav aria-label="Breadcrumb">
+        <a href="{% url 'moderation:review_queue' %}">
+            Back to review moderation
+        </a>
+    </nav>
 
-    <p>Product: {{ review.product.name }}</p>
-    <p>Author: {{ review.author.username }}</p>
-    <p>Rating: {{ review.rating }} out of 5</p>
-    <p>Current status: {{ review.get_status_display }}</p>
+    <div class="moderation-decision-layout">
+        <article class="review-card moderation-review-detail">
+            <p class="eyebrow">Review details</p>
 
-    {% if not review.product.is_active %}
-        <p>This product is inactive. Approval is unavailable.</p>
-    {% endif %}
+            <h1>{{ review.title }}</h1>
 
-    {% if not review.author.is_active %}
-        <p>This author's account is inactive. Approval is unavailable.</p>
-    {% endif %}
+            <dl class="moderation-details">
+                <div>
+                    <dt>Product</dt>
+                    <dd>{{ review.product.name }}</dd>
+                </div>
 
-    <div class="review-body">{{ review.body|linebreaksbr }}</div>
-</article>
+                <div>
+                    <dt>Author</dt>
+                    <dd>{{ review.author.username }}</dd>
+                </div>
 
-<section class="review-editor" aria-labelledby="decision-heading">
-    <h2 id="decision-heading">Record your decision</h2>
+                <div>
+                    <dt>Rating</dt>
+                    <dd>{{ review.rating }} out of 5</dd>
+                </div>
+            </dl>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save decision</button>
-    </form>
+            <p class="moderation-current-status">
+                Current status: <strong>{{ review.get_status_display }}</strong>
+            </p>
 
-    <p>
-        If the review has changed, reload its latest version before deciding.
-    </p>
-    <a href="{% url 'moderation:review_decision' pk=review.pk %}">
-        Reload latest review
-    </a>
-</section>
+            {% if not review.product.is_active %}
+                <p class="moderation-warning">
+                    This product is inactive. Approval is unavailable.
+                </p>
+            {% endif %}
+
+            {% if not review.author.is_active %}
+                <p class="moderation-warning">
+                    This author's account is inactive. Approval is unavailable.
+                </p>
+            {% endif %}
+
+            <div class="moderation-review-body">
+                <h2>Review</h2>
+                <div class="review-body">
+                    {{ review.body|linebreaksbr }}
+                </div>
+            </div>
+        </article>
+
+        <section
+            class="review-editor moderation-decision-panel"
+            aria-labelledby="decision-heading"
+        >
+            <p class="eyebrow">Moderation action</p>
+            <h2 id="decision-heading">Record your decision</h2>
+
+            <form method="post" aria-label="Review decision form">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <button type="submit">Save decision</button>
+            </form>
+
+            <div class="moderation-reload">
+                <p>
+                    If the review has changed, reload its latest version
+                    before deciding.
+                </p>
+
+                <a href="{% url 'moderation:review_decision' pk=review.pk %}">
+                    Reload latest review
+                </a>
+            </div>
+        </section>
+    </div>
 {% endblock %}

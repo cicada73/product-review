@@ -1,82 +1,128 @@
 {% extends "moderation/base.html" %}
 
-{% block title %}Reported reviews{% endblock %}
+{% block title %}Reported reviews · Product Reviews{% endblock %}
 
 {% block content %}
-<header class="catalog-heading">
-    <h1>Reported reviews</h1>
-    <p>
-        Your own reports and reports about your reviews are excluded.
-    </p>
-</header>
-
-<form method="get" class="catalog-filters">
-    <div class="catalog-filter-field">
-        <label for="report-status">Report status</label>
-        <select id="report-status" name="status">
-            {% for value, label in statuses %}
-                <option
-                    value="{{ value }}"
-                    {% if selected_status == value %}selected{% endif %}
-                >
-                    {{ label }}
-                </option>
-            {% endfor %}
-            <option
-                value="all"
-                {% if selected_status == "all" %}selected{% endif %}
-            >
-                All statuses
-            </option>
-        </select>
-    </div>
-    <button type="submit">Apply filter</button>
-</form>
-
-<p>
-    {{ page_obj.paginator.count }}
-    report{{ page_obj.paginator.count|pluralize }} found.
-</p>
-
-<section aria-label="Review reports">
-    {% for report in page_obj %}
-        <article class="review-card">
-            <h2>{{ report.review.title }}</h2>
-            <p>Product: {{ report.review.product.name }}</p>
+    <header class="catalog-heading catalog-heading-row">
+        <div>
+            <p class="eyebrow">Moderation workspace</p>
+            <h1>Reported reviews</h1>
             <p>
-                Reported by {{ report.reporter.username }}
-                · Reason: {{ report.get_reason_display }}
+                Your own reports and reports about your reviews are excluded.
             </p>
-            <p>Status: {{ report.get_status_display }}</p>
-            <p>{{ report.details|truncatewords:40 }}</p>
+        </div>
 
-            <a href="{% url 'moderation:report_decision' pk=report.pk %}">
-                View report
-            </a>
-        </article>
-    {% empty %}
-        <p>No reports match this status.</p>
-    {% endfor %}
-</section>
-
-{% if page_obj.has_other_pages %}
-    <nav class="catalog-pagination" aria-label="Report pages">
-        {% if page_obj.has_previous %}
-            <a href="{% querystring page=page_obj.previous_page_number %}">
-                Previous
-            </a>
-        {% endif %}
-
-        <span>
-            Page {{ page_obj.number }}
-            of {{ page_obj.paginator.num_pages }}
+        <span class="catalog-count">
+            {{ page_obj.paginator.count }}
+            report{{ page_obj.paginator.count|pluralize }} found.
         </span>
+    </header>
 
-        {% if page_obj.has_next %}
-            <a href="{% querystring page=page_obj.next_page_number %}">
-                Next
-            </a>
-        {% endif %}
-    </nav>
-{% endif %}
+    <form
+        method="get"
+        class="catalog-filters"
+        aria-label="Report status filter"
+    >
+        <div class="catalog-filter-field">
+            <label for="report-status">Report status</label>
+
+            <select id="report-status" name="status">
+                {% for value, label in statuses %}
+                    <option
+                        value="{{ value }}"
+                        {% if selected_status == value %}selected{% endif %}
+                    >
+                        {{ label }}
+                    </option>
+                {% endfor %}
+
+                <option
+                    value="all"
+                    {% if selected_status == "all" %}selected{% endif %}
+                >
+                    All statuses
+                </option>
+            </select>
+        </div>
+
+        <button type="submit">Apply filter</button>
+    </form>
+
+    <section class="moderation-list" aria-label="Review reports">
+        {% for report in page_obj %}
+            <article class="review-card moderation-card">
+                <div class="moderation-card-heading">
+                    <h2>{{ report.review.title }}</h2>
+
+                    <p class="moderation-status moderation-status--{{ report.status }}">
+                        Status: {{ report.get_status_display }}
+                    </p>
+                </div>
+
+                <div class="moderation-card-content">
+                    <dl class="moderation-details">
+                        <div>
+                            <dt>Product</dt>
+                            <dd>{{ report.review.product.name }}</dd>
+                        </div>
+
+                        <div>
+                            <dt>Reported by</dt>
+                            <dd>{{ report.reporter.username }}</dd>
+                        </div>
+
+                        <div>
+                            <dt>Reason</dt>
+                            <dd>{{ report.get_reason_display }}</dd>
+                        </div>
+                    </dl>
+
+                    {% if report.details %}
+                        <p class="review-body">
+                            {{ report.details|truncatewords:40 }}
+                        </p>
+                    {% else %}
+                        <p class="review-body">
+                            No additional details provided.
+                        </p>
+                    {% endif %}
+                </div>
+
+                <div class="moderation-card-footer">
+                    <a
+                        class="button"
+                        href="{% url 'moderation:report_decision' pk=report.pk %}"
+                    >
+                        View report
+                    </a>
+                </div>
+            </article>
+        {% empty %}
+            <div class="moderation-empty">
+                <h2>No reports to show</h2>
+                <p>No reports match this status.</p>
+            </div>
+        {% endfor %}
+    </section>
+
+    {% if page_obj.has_other_pages %}
+        <nav class="catalog-pagination" aria-label="Report pages">
+            {% if page_obj.has_previous %}
+                <a href="{% querystring page=page_obj.previous_page_number %}">
+                    Previous
+                </a>
+            {% endif %}
+
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="{% querystring page=page_obj.next_page_number %}">
+                    Next
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
 {% endblock %}

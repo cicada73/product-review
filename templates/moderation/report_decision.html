@@ -1,77 +1,152 @@
 {% extends "moderation/base.html" %}
 
-{% block title %}Report decision{% endblock %}
+{% block title %}Report decision · Product Reviews{% endblock %}
 
 {% block content %}
-<article class="review-card">
-    <h1>Report #{{ report.pk }}</h1>
-    <p>Reported by {{ report.reporter.username }}</p>
-    <p>Reason: {{ report.get_reason_display }}</p>
-    <p>Report status: {{ report.get_status_display }}</p>
-
-    <h2>Report details</h2>
-    <div class="review-body">
-        {{ report.details|default:"No additional details."|linebreaksbr }}
-    </div>
-</article>
-
-<article class="review-card">
-    <h2>{{ report.review.title }}</h2>
-    <p>Product: {{ report.review.product.name }}</p>
-    <p>Review author: {{ report.review.author.username }}</p>
-    <p>Rating: {{ report.review.rating }} out of 5</p>
-    <p>Review status: {{ report.review.get_status_display }}</p>
-
-    <div class="review-body">
-        {{ report.review.body|linebreaksbr }}
-    </div>
-
-    {% if perms.moderation.moderate_reviews %}
-        <p>
-            <a href="{% url 'moderation:review_decision' pk=report.review.pk %}">
-                Open review approval/rejection
-            </a>
-        </p>
-    {% endif %}
-</article>
-
-{% if report.status == "open" %}
-    <section class="review-editor" aria-labelledby="outcome-heading">
-        <h2 id="outcome-heading">Close this report</h2>
-        <p>
-            Resolved means the concern has been addressed.
-            Dismissed means no action is needed.
-            Closing the report does not change the review's status.
-        </p>
-
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Save report outcome</button>
-        </form>
-
-        <p>
-            If you change the review's status, reload this report
-            before recording its outcome.
-        </p>
-        <a href="{% url 'moderation:report_decision' pk=report.pk %}">
-            Reload latest report
+    <nav aria-label="Breadcrumb">
+        <a href="{% url 'moderation:report_queue' %}">
+            Back to reported reviews
         </a>
-    </section>
-{% else %}
-    <section class="review-card" aria-labelledby="closed-heading">
-        <h2 id="closed-heading">Report closed</h2>
-        {{ form.non_field_errors }}
+    </nav>
 
-        <p>Closed by {{ report.resolved_by.username }}</p>
-        <p>
-            <time datetime="{{ report.resolved_at|date:'c' }}">
-                {{ report.resolved_at|date:"F j, Y, g:i a" }}
-            </time>
-        </p>
-        <div class="review-body">
-            {{ report.resolution_note|linebreaksbr }}
+    <div class="moderation-decision-layout">
+        <div class="report-detail-stack">
+            <article class="review-card moderation-review-detail">
+                <p class="eyebrow">Report details</p>
+
+                <h1>Report #{{ report.pk }}</h1>
+
+                <dl class="moderation-details">
+                    <div>
+                        <dt>Reported by</dt>
+                        <dd>{{ report.reporter.username }}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Reason</dt>
+                        <dd>{{ report.get_reason_display }}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Report status</dt>
+                        <dd>{{ report.get_status_display }}</dd>
+                    </div>
+                </dl>
+
+                <div class="moderation-review-body">
+                    <h2>Report details</h2>
+                    <div class="review-body">
+                        {{ report.details|default:"No additional details."|linebreaksbr }}
+                    </div>
+                </div>
+            </article>
+
+            <article class="review-card moderation-review-detail">
+                <p class="eyebrow">Reported review</p>
+
+                <h2>{{ report.review.title }}</h2>
+
+                <dl class="moderation-details">
+                    <div>
+                        <dt>Product</dt>
+                        <dd>{{ report.review.product.name }}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Review author</dt>
+                        <dd>{{ report.review.author.username }}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Rating</dt>
+                        <dd>{{ report.review.rating }} out of 5</dd>
+                    </div>
+                </dl>
+
+                <p class="moderation-current-status">
+                    Review status:
+                    <strong>{{ report.review.get_status_display }}</strong>
+                </p>
+
+                <div class="moderation-review-body">
+                    <div class="review-body">
+                        {{ report.review.body|linebreaksbr }}
+                    </div>
+                </div>
+
+                {% if perms.moderation.moderate_reviews %}
+                    <div class="moderation-reload">
+                        <a href="{% url 'moderation:review_decision' pk=report.review.pk %}">
+                            Open review approval/rejection
+                        </a>
+                    </div>
+                {% endif %}
+            </article>
         </div>
-    </section>
-{% endif %}
+
+        {% if report.status == "open" %}
+            <section
+                class="review-editor moderation-decision-panel"
+                aria-labelledby="outcome-heading"
+            >
+                <p class="eyebrow">Report outcome</p>
+                <h2 id="outcome-heading">Close this report</h2>
+
+                <div class="review-guidance">
+                    <p>
+                        Resolved means the concern has been addressed.
+                        Dismissed means no action is needed.
+                        Closing the report does not change the review's status.
+                    </p>
+                </div>
+
+                <form method="post" aria-label="Report outcome form">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+
+                    <button type="submit">Save report outcome</button>
+                </form>
+
+                <div class="moderation-reload">
+                    <p>
+                        If you change the review's status, reload this report
+                        before recording its outcome.
+                    </p>
+
+                    <a href="{% url 'moderation:report_decision' pk=report.pk %}">
+                        Reload latest report
+                    </a>
+                </div>
+            </section>
+        {% else %}
+            <section
+                class="review-card moderation-review-detail"
+                aria-labelledby="closed-heading"
+            >
+                <p class="eyebrow">Recorded outcome</p>
+                <h2 id="closed-heading">Report closed</h2>
+
+                {{ form.non_field_errors }}
+
+                <p class="report-outcome-label">
+                    {{ report.get_status_display }}
+                </p>
+
+                <p>Closed by {{ report.resolved_by.username }}</p>
+
+                <p>
+                    <time datetime="{{ report.resolved_at|date:'c' }}">
+                        {{ report.resolved_at|date:"F j, Y, g:i a" }}
+                    </time>
+                </p>
+
+                <div class="moderation-review-body">
+                    <h3>Resolution note</h3>
+                    <div class="review-body">
+                        {{ report.resolution_note|linebreaksbr }}
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+    </div>
 {% endblock %}

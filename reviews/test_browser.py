@@ -65,7 +65,12 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
         )
         self.field(page, "Username").fill(username)
         self.field(page, "Password").fill(self.password)
-        page.locator("form").get_by_role("button").click()
+
+        page.get_by_role(
+            "button",
+            name="Log in",
+            exact=True,
+        ).click()
 
         expect(page).to_have_url(
             self.live_server_url + reverse("home"),
@@ -86,6 +91,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
         edited_body = (
             "My experience changed after using this product for longer."
         )
+
         detail_url = (
             self.live_server_url
             + reverse(
@@ -109,6 +115,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                 # The author submits a new review.
                 self.login(author_page, self.author.username)
                 author_page.goto(detail_url)
+
                 author_page.get_by_role(
                     "link",
                     name="Write a review",
@@ -122,7 +129,12 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                 self.field(author_page, "Your review").fill(
                     "This product worked well throughout everyday use.",
                 )
+
                 author_page.get_by_role(
+                    "form",
+                    name="Review form",
+                    exact=True,
+                ).get_by_role(
                     "button",
                     name="Submit review",
                     exact=True,
@@ -139,6 +151,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
 
                 # A visitor cannot see the pending review.
                 visitor_page.goto(detail_url)
+
                 expect(
                     visitor_page.get_by_role(
                         "heading",
@@ -146,6 +159,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                         exact=True,
                     )
                 ).to_have_count(0)
+
                 expect(
                     visitor_page.get_by_text(
                         "No approved reviews yet.",
@@ -156,6 +170,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                 # A separate moderator session approves it.
                 self.login(moderator_page, self.moderator.username)
                 moderator_page.goto(queue_url)
+
                 moderator_page.get_by_role(
                     "link",
                     name="Review and decide",
@@ -175,13 +190,19 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                     moderator_page,
                     "Decision",
                 ).select_option("approved")
+
                 self.field(
                     moderator_page,
                     "Reason for this decision",
                 ).fill(
                     "Reviewed the complete content and approved this review."
                 )
+
                 moderator_page.get_by_role(
+                    "form",
+                    name="Review decision form",
+                    exact=True,
+                ).get_by_role(
                     "button",
                     name="Save decision",
                     exact=True,
@@ -191,6 +212,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
 
                 # The visitor now sees the approved review and rating.
                 visitor_page.reload()
+
                 expect(
                     visitor_page.get_by_role(
                         "heading",
@@ -199,15 +221,18 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                         exact=True,
                     )
                 ).to_be_visible()
+
                 expect(
                     visitor_page.locator(".product-rating")
                 ).to_contain_text("4.0 out of 5")
+
                 expect(
                     visitor_page.locator(".product-rating")
                 ).to_contain_text("1 approved review")
 
                 # Editing requires approval again.
                 author_page.goto(detail_url)
+
                 author_page.get_by_role(
                     "link",
                     name="Edit my review",
@@ -219,9 +244,18 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                 ).to_have_value(original_title)
 
                 self.field(author_page, "Rating").select_option("2")
-                self.field(author_page, "Review title").fill(edited_title)
-                self.field(author_page, "Your review").fill(edited_body)
+                self.field(author_page, "Review title").fill(
+                    edited_title,
+                )
+                self.field(author_page, "Your review").fill(
+                    edited_body,
+                )
+
                 author_page.get_by_role(
+                    "form",
+                    name="Review form",
+                    exact=True,
+                ).get_by_role(
                     "button",
                     name="Save changes",
                     exact=True,
@@ -230,6 +264,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                 expect(author_page).to_have_url(detail_url)
 
                 visitor_page.reload()
+
                 for title in [original_title, edited_title]:
                     expect(
                         visitor_page.get_by_role(
@@ -250,6 +285,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                 author_page.goto(
                     self.live_server_url + reverse("reviews:my_reviews"),
                 )
+
                 expect(
                     author_page.get_by_role(
                         "heading",
@@ -257,6 +293,7 @@ class ReviewLifecycleBrowserTests(StaticLiveServerTestCase):
                         exact=True,
                     )
                 ).to_be_visible()
+
                 expect(
                     author_page.get_by_text(
                         "Status: Pending",

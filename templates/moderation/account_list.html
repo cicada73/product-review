@@ -1,97 +1,135 @@
 {% extends "moderation/base.html" %}
 
-{% block title %}Account management{% endblock %}
+{% block title %}Account management · Product Reviews{% endblock %}
 
 {% block content %}
-<header class="catalog-heading">
-    <h1>Account management</h1>
-    <p>
-        Staff, superusers, and your own account are excluded.
-    </p>
-</header>
-
-<form method="get" class="catalog-filters">
-    <div class="catalog-filter-field">
-        <label for="account-search">Search usernames</label>
-        <input
-            type="search"
-            id="account-search"
-            name="q"
-            value="{{ query }}"
-            maxlength="200"
-        >
-    </div>
-
-    <div class="catalog-filter-field">
-        <label for="account-state">Account state</label>
-        <select id="account-state" name="state">
-            <option
-                value="active"
-                {% if selected_state == "active" %}selected{% endif %}
-            >
-                Active
-            </option>
-            <option
-                value="suspended"
-                {% if selected_state == "suspended" %}selected{% endif %}
-            >
-                Suspended
-            </option>
-            <option
-                value="all"
-                {% if selected_state == "all" %}selected{% endif %}
-            >
-                All states
-            </option>
-        </select>
-    </div>
-
-    <button type="submit">Apply filters</button>
-    <a href="{% url 'moderation:account_list' %}">Clear filters</a>
-</form>
-
-<p>
-    {{ page_obj.paginator.count }}
-    account{{ page_obj.paginator.count|pluralize }} found.
-</p>
-
-<section aria-label="Accounts">
-    {% for account in page_obj %}
-        <article class="review-card">
-            <h2>{{ account.username }}</h2>
+    <header class="catalog-heading catalog-heading-row">
+        <div>
+            <p class="eyebrow">Moderation workspace</p>
+            <h1>Account management</h1>
             <p>
-                State:
-                {% if account.is_active %}Active{% else %}Suspended{% endif %}
+                Staff, superusers, and your own account are excluded.
             </p>
-            <p>Joined {{ account.date_joined|date:"F j, Y" }}</p>
+        </div>
 
-            <a href="{% url 'moderation:account_decision' pk=account.pk %}">
-                Manage account
-            </a>
-        </article>
-    {% empty %}
-        <p>No accounts match your filters.</p>
-    {% endfor %}
-</section>
-
-{% if page_obj.has_other_pages %}
-    <nav class="catalog-pagination" aria-label="Account pages">
-        {% if page_obj.has_previous %}
-            <a href="{% querystring page=page_obj.previous_page_number %}">
-                Previous
-            </a>
-        {% endif %}
-
-        <span>
-            Page {{ page_obj.number }}
-            of {{ page_obj.paginator.num_pages }}
+        <span class="catalog-count">
+            {{ page_obj.paginator.count }}
+            account{{ page_obj.paginator.count|pluralize }} found.
         </span>
+    </header>
 
-        {% if page_obj.has_next %}
-            <a href="{% querystring page=page_obj.next_page_number %}">
-                Next
-            </a>
-        {% endif %}
-    </nav>
-{% endif %}
+    <form
+        method="get"
+        class="catalog-filters"
+        aria-label="Account filters"
+    >
+        <div class="catalog-filter-field">
+            <label for="account-search">Search usernames</label>
+            <input
+                type="search"
+                id="account-search"
+                name="q"
+                value="{{ query }}"
+                maxlength="200"
+                placeholder="Enter a username"
+            >
+        </div>
+
+        <div class="catalog-filter-field">
+            <label for="account-state">Account state</label>
+
+            <select id="account-state" name="state">
+                <option
+                    value="active"
+                    {% if selected_state == "active" %}selected{% endif %}
+                >
+                    Active
+                </option>
+
+                <option
+                    value="suspended"
+                    {% if selected_state == "suspended" %}selected{% endif %}
+                >
+                    Suspended
+                </option>
+
+                <option
+                    value="all"
+                    {% if selected_state == "all" %}selected{% endif %}
+                >
+                    All states
+                </option>
+            </select>
+        </div>
+
+        <button type="submit">Apply filters</button>
+
+        <a href="{% url 'moderation:account_list' %}">
+            Clear filters
+        </a>
+    </form>
+
+    <section class="moderation-list" aria-label="Accounts">
+        {% for account in page_obj %}
+            <article class="review-card moderation-card">
+                <div class="moderation-card-heading">
+                    <h2>{{ account.username }}</h2>
+
+                    {% if account.is_active %}
+                        <p class="moderation-status moderation-status--active">
+                            State: Active
+                        </p>
+                    {% else %}
+                        <p class="moderation-status moderation-status--suspended">
+                            State: Suspended
+                        </p>
+                    {% endif %}
+                </div>
+
+                <div class="moderation-card-content">
+                    <p class="review-body">
+                        Joined
+                        <time datetime="{{ account.date_joined|date:'c' }}">
+                            {{ account.date_joined|date:"F j, Y" }}
+                        </time>
+                    </p>
+                </div>
+
+                <div class="moderation-card-footer">
+                    <a
+                        class="button"
+                        href="{% url 'moderation:account_decision' pk=account.pk %}"
+                    >
+                        Manage account
+                    </a>
+                </div>
+            </article>
+        {% empty %}
+            <div class="moderation-empty">
+                <h2>No accounts to show</h2>
+                <p>No accounts match your filters.</p>
+            </div>
+        {% endfor %}
+    </section>
+
+    {% if page_obj.has_other_pages %}
+        <nav class="catalog-pagination" aria-label="Account pages">
+            {% if page_obj.has_previous %}
+                <a href="{% querystring page=page_obj.previous_page_number %}">
+                    Previous
+                </a>
+            {% endif %}
+
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="{% querystring page=page_obj.next_page_number %}">
+                    Next
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
 {% endblock %}

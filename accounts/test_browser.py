@@ -48,7 +48,12 @@ class AccountBrowserTests(StaticLiveServerTestCase):
     def submit_login(self, page, username, password):
         self.field(page, "Username").fill(username)
         self.field(page, "Password").fill(password)
-        page.locator("form").get_by_role("button").click()
+
+        page.get_by_role(
+            "button",
+            name="Log in",
+            exact=True,
+        ).click()
 
     def logout_from_home(self, page):
         page.goto(self.live_server_url + reverse("home"))
@@ -56,7 +61,11 @@ class AccountBrowserTests(StaticLiveServerTestCase):
         logout_path = reverse("accounts:logout")
         page.locator(
             f'form[action="{logout_path}"]'
-        ).get_by_role("button").click()
+        ).get_by_role(
+            "button",
+            name="Log out",
+            exact=True,
+        ).click()
 
         expect(page).to_have_url(
             self.live_server_url
@@ -99,11 +108,20 @@ class AccountBrowserTests(StaticLiveServerTestCase):
                     "Password confirmation",
                 ).fill(self.password)
 
-                page.locator("form").get_by_role("button").click()
+                page.get_by_role(
+                    "form",
+                    name="Signup form",
+                    exact=True,
+                ).get_by_role(
+                    "button",
+                    name="Create account",
+                    exact=True,
+                ).click()
 
                 expect(page).to_have_url(
                     self.live_server_url + reverse("home"),
                 )
+
                 page.get_by_role(
                     "link",
                     name="Your profile",
@@ -122,11 +140,23 @@ class AccountBrowserTests(StaticLiveServerTestCase):
 
                 self.field(page, "First name").fill("Browser")
                 self.field(page, "Last name").fill("Tester")
-                page.locator("form").get_by_role("button").click()
+
+                page.get_by_role(
+                    "form",
+                    name="Profile form",
+                    exact=True,
+                ).get_by_role(
+                    "button",
+                    name="Save profile",
+                    exact=True,
+                ).click()
 
                 expect(page).to_have_url(
                     self.live_server_url + reverse("accounts:profile"),
                 )
+
+                # Wait for the save response before reloading.
+                expect(page.get_by_role("status")).to_be_visible()
 
                 page.reload()
 
@@ -179,6 +209,7 @@ class AccountBrowserTests(StaticLiveServerTestCase):
                 expect(page).to_have_url(
                     self.live_server_url + reverse("home"),
                 )
+
                 page.get_by_role(
                     "link",
                     name="Your profile",

@@ -1,48 +1,5 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Moderation{% endblock %} | Product Reviews</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <main class="catalog-page">
-        <nav aria-label="Main navigation">
-            <a href="{% url 'home' %}">Home</a>
-            <span aria-hidden="true"> / </span>
-            <a href="{% url 'catalog:product_list' %}">Products</a>
+{% extends "base.html" %}
 
-            {% if perms.moderation.moderate_reviews %}
-                <span aria-hidden="true"> / </span>
-                <a href="{% url 'moderation:review_queue' %}">
-                    Review moderation
-                </a>
-            {% endif %}
+{% block title %}Moderation · Product Reviews{% endblock %}
 
-            {% if perms.moderation.manage_reports %}
-                <span aria-hidden="true"> / </span>
-                    <a href="{% url 'moderation:report_queue' %}">
-                        Reported reviews
-                    </a>
-            {% endif %}
-
-            {% if perms.moderation.suspend_users %}
-                <span aria-hidden="true"> / </span>
-                    <a href="{% url 'moderation:account_list' %}">
-                         Account management
-                    </a>
-            {% endif %}
-        </nav>
-
-        {% if messages %}
-            {% for message in messages %}
-                <p class="notice" role="status">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-
-        {% block content %}{% endblock %}
-    </main>
-</body>
-</html>
+{% block main_class %}catalog-page{% endblock %}

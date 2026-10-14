@@ -1,41 +1,61 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Report a review | Product Reviews</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <main class="catalog-page">
-        <nav aria-label="Main navigation">
-            <a href="{% url 'catalog:product_detail' slug=review.product.slug %}">
-                Back to {{ review.product.name }}
-            </a>
-        </nav>
+{% extends "base.html" %}
 
-        <article class="review-card">
+{% block title %}Report a review · Product Reviews{% endblock %}
+
+{% block main_class %}catalog-page{% endblock %}
+
+{% block content %}
+    <nav aria-label="Breadcrumb">
+        <a href="{% url 'catalog:product_detail' slug=review.product.slug %}">
+            Back to {{ review.product.name }}
+        </a>
+    </nav>
+
+    <header class="catalog-heading">
+        <p class="eyebrow">Community feedback</p>
+        <h1 id="report-heading">Report this review</h1>
+        <p>
+            Select a reason and explain the problem if needed.
+            A moderator will review your report.
+        </p>
+    </header>
+
+    <div class="moderation-decision-layout">
+        <article class="review-card moderation-review-detail">
+            <p class="eyebrow">Review you are reporting</p>
+
             <h2>{{ review.title }}</h2>
+
             <p>Review by {{ review.author.username }}</p>
-            <div class="review-body">
-                {{ review.body|linebreaksbr }}
+
+            <div class="moderation-review-body">
+                <div class="review-body">
+                    {{ review.body|linebreaksbr }}
+                </div>
             </div>
         </article>
 
-        <section class="review-editor" aria-labelledby="report-heading">
-            <h1 id="report-heading">Report this review</h1>
-            <p>
-                Select a reason and explain the problem if needed.
-                A moderator will review your report.
-            </p>
+        <section
+            class="review-editor moderation-decision-panel"
+            aria-labelledby="report-details-heading"
+        >
+            <h2 id="report-details-heading">Report details</h2>
 
-            <form method="post">
+            <form method="post" aria-label="Report review form">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit">Submit report</button>
+
+                <div class="review-form-actions">
+                    <button type="submit">Submit report</button>
+
+                    <a
+                        class="button review-cancel-button"
+                        href="{% url 'catalog:product_detail' slug=review.product.slug %}"
+                    >
+                        Cancel
+                    </a>
+                </div>
             </form>
         </section>
-    </main>
-</body>
-</html>
+    </div>
+{% endblock %}

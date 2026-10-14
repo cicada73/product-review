@@ -1,32 +1,34 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>
-        {% if is_edit %}Edit review{% else %}Write a review{% endif %}
-        | Product Reviews
-    </title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <main class="catalog-page">
-        <nav aria-label="Main navigation">
-            <a href="{% url 'catalog:product_detail' slug=product.slug %}">
-                Back to {{ product.name }}
-            </a>
-        </nav>
+{% extends "base.html" %}
 
-        <section class="review-editor" aria-labelledby="review-heading">
-            <h1 id="review-heading">
-                {% if is_edit %}
-                    Edit your review of {{ product.name }}
-                {% else %}
-                    Review {{ product.name }}
-                {% endif %}
-            </h1>
+{% block title %}
+    {% if is_edit %}Edit review{% else %}Write a review{% endif %}
+    · Product Reviews
+{% endblock %}
 
+{% block main_class %}catalog-page{% endblock %}
+
+{% block content %}
+    <nav aria-label="Breadcrumb">
+        <a href="{% url 'catalog:product_detail' slug=product.slug %}">
+            Back to {{ product.name }}
+        </a>
+    </nav>
+
+    <section
+        class="review-editor review-form-panel"
+        aria-labelledby="review-heading"
+    >
+        <p class="eyebrow">Your experience matters</p>
+
+        <h1 id="review-heading">
+            {% if is_edit %}
+                Edit your review of {{ product.name }}
+            {% else %}
+                Review {{ product.name }}
+            {% endif %}
+        </h1>
+
+        <div class="review-guidance">
             {% if is_edit %}
                 <p>
                     Saving changes returns your review to pending approval.
@@ -38,11 +40,17 @@
                     Your review will appear publicly after approval.
                 </p>
             {% endif %}
+        </div>
 
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
+        <form
+            id="review-form"
+            method="post"
+            aria-label="Review form"
+        >
+            {% csrf_token %}
+            {{ form.as_p }}
 
+            <div class="review-form-actions">
                 <button type="submit">
                     {% if is_edit %}
                         Save changes
@@ -50,8 +58,14 @@
                         Submit review
                     {% endif %}
                 </button>
-            </form>
-        </section>
-    </main>
-</body>
-</html>
+
+                <a
+                    class="button review-cancel-button"
+                    href="{% url 'catalog:product_detail' slug=product.slug %}"
+                >
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </section>
+{% endblock %}

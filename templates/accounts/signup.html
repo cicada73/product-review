@@ -1,32 +1,38 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create an account | Product Reviews</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <header>
-        <a class="brand" href="{% url 'home' %}">Product Reviews</a>
-    </header>
+{% extends "base.html" %}
 
-    <main>
-        <section class="auth-card" aria-labelledby="signup-title">
-            <h1 id="signup-title">Create an account</h1>
-            <p>Join the community and share your product experiences.</p>
+{% block title %}Create an account · Product Reviews{% endblock %}
 
-            <form method="post" action="{% url 'accounts:signup' %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit">Create account</button>
-            </form>
-            <p> Already have an account?
-            <a href="{% url 'accounts:login' %}">Log in</a>
+{% block content %}
+    <section class="auth-card" aria-labelledby="signup-title">
+        <p class="eyebrow">Join the community</p>
+
+        <h1 id="signup-title">Create an account</h1>
+
+        <p class="auth-intro">
+            Share your product experiences and help others
+            make informed choices.
+        </p>
+
+        <form
+            method="post"
+            action="{% url 'accounts:signup' %}"
+            aria-label="Signup form"
+        >
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit">Create account</button>
+        </form>
+
+        <div class="auth-links">
+            <p>
+                Already have an account?
+                <a href="{% url 'accounts:login' %}">Log in</a>
             </p>
-            <p><a href="{% url 'home' %}">Back to home</a></p>
-        </section>
-    </main>
-</body>
-</html>
+
+            <a class="auth-back" href="{% url 'home' %}">
+                Back to home
+            </a>
+        </div>
+    </section>
+{% endblock %}

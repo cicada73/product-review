@@ -1,59 +1,64 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>My reviews | Product Reviews</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <main class="catalog-page">
-        <nav aria-label="Main navigation">
-            <a href="{% url 'home' %}">Home</a>
-            <span aria-hidden="true"> / </span>
-            <a href="{% url 'catalog:product_list' %}">Browse products</a>
-        </nav>
+{% extends "base.html" %}
 
-        <header class="catalog-heading">
+{% block title %}My reviews · Product Reviews{% endblock %}
+
+{% block main_class %}catalog-page{% endblock %}
+
+{% block content %}
+    <header class="catalog-heading catalog-heading-row">
+        <div>
+            <p class="eyebrow">Your contributions</p>
             <h1>My reviews</h1>
             <p>
                 You have submitted
                 {{ page_obj.paginator.count }}
                 review{{ page_obj.paginator.count|pluralize }}.
             </p>
-        </header>
+        </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <p class="notice" role="status">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
+        <a class="button" href="{% url 'catalog:product_list' %}">
+            Browse products
+        </a>
+    </header>
 
-        <section aria-label="Your reviews">
-            {% for review in page_obj %}
-                <article class="review-card">
-                    <h2>
-                        {% if review.product.is_active %}
-                            <a href="{% url 'catalog:product_detail' slug=review.product.slug %}">
+    <section class="my-review-list" aria-label="Your reviews">
+        {% for review in page_obj %}
+            <article class="review-card my-review-card">
+                <div class="my-review-heading">
+                    <div class="my-review-product">
+                        <p class="my-review-label">Product</p>
+
+                        <h2>
+                            {% if review.product.is_active %}
+                                <a href="{% url 'catalog:product_detail' slug=review.product.slug %}">
+                                    {{ review.product.name }}
+                                </a>
+                            {% else %}
                                 {{ review.product.name }}
-                            </a>
-                        {% else %}
-                            {{ review.product.name }}
-                        {% endif %}
-                    </h2>
+                            {% endif %}
+                        </h2>
+                    </div>
 
-                    <p>
-                        <strong>Status: {{ review.get_status_display }}</strong>
+                    <p class="review-status review-status--{{ review.status }}">
+                        Status: {{ review.get_status_display }}
                     </p>
+                </div>
 
+                <div class="my-review-content">
                     <h3>{{ review.title }}</h3>
 
-                    <p>{{ review.rating }} out of 5</p>
+                    <p class="my-review-rating">
+                        <span aria-hidden="true">★</span>
+                        {{ review.rating }} out of 5
+                    </p>
 
-                    <p>{{ review.body|truncatewords:40 }}</p>
+                    <p class="review-body">
+                        {{ review.body|truncatewords:40 }}
+                    </p>
+                </div>
 
-                    <p>
+                <div class="my-review-footer">
+                    <p class="my-review-updated">
                         Updated
                         <time datetime="{{ review.updated_at|date:'c' }}">
                             {{ review.updated_at|date:"F j, Y, g:i a" }}
@@ -61,46 +66,51 @@
                     </p>
 
                     {% if review.product.is_active %}
-                        <a href="{% url 'reviews:review_edit' pk=review.pk %}">
+                        <a
+                            class="button review-edit-button"
+                            href="{% url 'reviews:review_edit' pk=review.pk %}"
+                        >
                             Edit review
                         </a>
                     {% else %}
-                        <p>
+                        <p class="my-review-unavailable">
                             This product is currently unavailable.
                             Editing is disabled while it is unavailable.
                         </p>
                     {% endif %}
-                </article>
-            {% empty %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="my-reviews-empty">
+                <p class="eyebrow">Share your experience</p>
+                <h2>Your first review starts here</h2>
                 <p>You haven’t submitted any reviews yet.</p>
-                <p>
-                    <a href="{% url 'catalog:product_list' %}">
-                        Find a product to review
-                    </a>
-                </p>
-            {% endfor %}
-        </section>
 
-        {% if page_obj.has_other_pages %}
-            <nav class="catalog-pagination" aria-label="Your review pages">
-                {% if page_obj.has_previous %}
-                    <a href="{% querystring page=page_obj.previous_page_number %}">
-                        Previous
-                    </a>
-                {% endif %}
+                <a class="button" href="{% url 'catalog:product_list' %}">
+                    Find a product to review
+                </a>
+            </div>
+        {% endfor %}
+    </section>
 
-                <span>
-                    Page {{ page_obj.number }}
-                    of {{ page_obj.paginator.num_pages }}
-                </span>
+    {% if page_obj.has_other_pages %}
+        <nav class="catalog-pagination" aria-label="Your review pages">
+            {% if page_obj.has_previous %}
+                <a href="{% querystring page=page_obj.previous_page_number %}">
+                    Previous
+                </a>
+            {% endif %}
 
-                {% if page_obj.has_next %}
-                    <a href="{% querystring page=page_obj.next_page_number %}">
-                        Next
-                    </a>
-                {% endif %}
-            </nav>
-        {% endif %}
-    </main>
-</body>
-</html>
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="{% querystring page=page_obj.next_page_number %}">
+                    Next
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
+{% endblock %}

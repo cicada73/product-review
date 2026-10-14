@@ -1,81 +1,120 @@
 {% extends "moderation/base.html" %}
 
-{% block title %}Review moderation{% endblock %}
+{% block title %}Review moderation · Product Reviews{% endblock %}
 
 {% block content %}
-<header class="catalog-heading">
-    <h1>Review moderation</h1>
-    <p>Your own reviews are excluded from this queue.</p>
-</header>
+    <header class="catalog-heading catalog-heading-row">
+        <div>
+            <p class="eyebrow">Moderation workspace</p>
+            <h1>Review moderation</h1>
+            <p>Your own reviews are excluded from this queue.</p>
+        </div>
 
-<form method="get" class="catalog-filters">
-    <div class="catalog-filter-field">
-        <label for="status-filter">Review status</label>
-        <select id="status-filter" name="status">
-            {% for value, label in statuses %}
-                <option
-                    value="{{ value }}"
-                    {% if selected_status == value %}selected{% endif %}
-                >
-                    {{ label }}
-                </option>
-            {% endfor %}
-            <option
-                value="all"
-                {% if selected_status == "all" %}selected{% endif %}
-            >
-                All statuses
-            </option>
-        </select>
-    </div>
-    <button type="submit">Apply filter</button>
-</form>
-
-<p>
-    {{ page_obj.paginator.count }}
-    review{{ page_obj.paginator.count|pluralize }} found.
-</p>
-
-<section aria-label="Reviews to moderate">
-    {% for review in page_obj %}
-        <article class="review-card">
-            <h2>{{ review.title }}</h2>
-            <p>
-                Product: {{ review.product.name }}
-                · Author: {{ review.author.username }}
-            </p>
-            <p>
-                Rating: {{ review.rating }} out of 5
-                · Status: {{ review.get_status_display }}
-            </p>
-            <p>{{ review.body|truncatewords:40 }}</p>
-            <a href="{% url 'moderation:review_decision' pk=review.pk %}">
-                Review and decide
-            </a>
-        </article>
-    {% empty %}
-        <p>No reviews match this status.</p>
-    {% endfor %}
-</section>
-
-{% if page_obj.has_other_pages %}
-    <nav class="catalog-pagination" aria-label="Moderation pages">
-        {% if page_obj.has_previous %}
-            <a href="{% querystring page=page_obj.previous_page_number %}">
-                Previous
-            </a>
-        {% endif %}
-
-        <span>
-            Page {{ page_obj.number }}
-            of {{ page_obj.paginator.num_pages }}
+        <span class="catalog-count">
+            {{ page_obj.paginator.count }}
+            review{{ page_obj.paginator.count|pluralize }} found.
         </span>
+    </header>
 
-        {% if page_obj.has_next %}
-            <a href="{% querystring page=page_obj.next_page_number %}">
-                Next
-            </a>
-        {% endif %}
-    </nav>
-{% endif %}
+    <form
+        method="get"
+        class="catalog-filters"
+        aria-label="Review status filter"
+    >
+        <div class="catalog-filter-field">
+            <label for="status-filter">Review status</label>
+
+            <select id="status-filter" name="status">
+                {% for value, label in statuses %}
+                    <option
+                        value="{{ value }}"
+                        {% if selected_status == value %}selected{% endif %}
+                    >
+                        {{ label }}
+                    </option>
+                {% endfor %}
+
+                <option
+                    value="all"
+                    {% if selected_status == "all" %}selected{% endif %}
+                >
+                    All statuses
+                </option>
+            </select>
+        </div>
+
+        <button type="submit">Apply filter</button>
+    </form>
+
+    <section class="moderation-list" aria-label="Reviews to moderate">
+        {% for review in page_obj %}
+            <article class="review-card moderation-card">
+                <div class="moderation-card-heading">
+                    <h2>{{ review.title }}</h2>
+
+                    <p class="moderation-status moderation-status--{{ review.status }}">
+                        Status: {{ review.get_status_display }}
+                    </p>
+                </div>
+
+                <div class="moderation-card-content">
+                    <dl class="moderation-details">
+                        <div>
+                            <dt>Product</dt>
+                            <dd>{{ review.product.name }}</dd>
+                        </div>
+
+                        <div>
+                            <dt>Author</dt>
+                            <dd>{{ review.author.username }}</dd>
+                        </div>
+
+                        <div>
+                            <dt>Rating</dt>
+                            <dd>{{ review.rating }} out of 5</dd>
+                        </div>
+                    </dl>
+
+                    <p class="review-body">
+                        {{ review.body|truncatewords:40 }}
+                    </p>
+                </div>
+
+                <div class="moderation-card-footer">
+                    <a
+                        class="button"
+                        href="{% url 'moderation:review_decision' pk=review.pk %}"
+                    >
+                        Review and decide
+                    </a>
+                </div>
+            </article>
+        {% empty %}
+            <div class="moderation-empty">
+                <h2>No reviews to show</h2>
+                <p>No reviews match this status.</p>
+            </div>
+        {% endfor %}
+    </section>
+
+    {% if page_obj.has_other_pages %}
+        <nav class="catalog-pagination" aria-label="Moderation pages">
+            {% if page_obj.has_previous %}
+                <a href="{% querystring page=page_obj.previous_page_number %}">
+                    Previous
+                </a>
+            {% endif %}
+
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="{% querystring page=page_obj.next_page_number %}">
+                    Next
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
 {% endblock %}

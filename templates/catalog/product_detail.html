@@ -1,127 +1,174 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ product.name }} | Product Reviews</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <main class="catalog-page">
-        <nav aria-label="Main navigation">
-            <a href="{% url 'home' %}">Home</a>
-            <span aria-hidden="true"> / </span>
-            <a href="{% url 'catalog:product_list' %}">Products</a>
-        </nav>
-        {% if messages %}
-            {% for message in messages %}
-                <p class="notice" role="status">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-        <article class="product-detail">
-            {% if product.image %}
-                <img
-                    class="product-detail-image"
-                    src="{{ product.image.url }}"
-                    alt="{{ product.name }}"
-                >
-            {% endif %}
+{% extends "base.html" %}
 
-            <header>
-                <p class="catalog-category">
-                    {{ product.category.name }}
-                </p>
+{% block title %}{{ product.name }} · Product Reviews{% endblock %}
+
+{% block main_class %}catalog-page{% endblock %}
+
+{% block content %}
+    <nav class="product-breadcrumbs" aria-label="Breadcrumb">
+        <a href="{% url 'home' %}">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href="{% url 'catalog:product_list' %}">Browse products</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{{ product.name }}</span>
+    </nav>
+
+    <article class="product-detail product-detail-panel">
+        <div class="product-overview">
+            <div class="product-visual">
+                {% if product.image %}
+                    <img
+                        class="product-detail-image"
+                        src="{{ product.image.url }}"
+                        alt="{{ product.name }}"
+                    >
+                {% else %}
+                    <div class="catalog-placeholder">
+                        <svg
+                            width="64"
+                            height="64"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.4"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                            focusable="false"
+                        >
+                            <path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/>
+                            <path d="m3 7.5 9 4.5 9-4.5M12 12v9M7.5 5.25l9 4.5"/>
+                        </svg>
+                        <span>No image available</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="product-summary">
+                <p class="eyebrow">{{ product.category.name }}</p>
 
                 <h1>{{ product.name }}</h1>
 
                 {% if product.brand %}
-                    <p>Brand: {{ product.brand }}</p>
-                {% endif %}
-
-                {% if rating_summary.review_count %}
-                    <p class="product-rating">
-                        {{ rating_summary.average_rating|floatformat:1 }}
-                        out of 5
-                        ·
-                        {{ rating_summary.review_count }}
-                        approved review{{ rating_summary.review_count|pluralize }}
+                    <p class="product-brand">
+                        Brand: {{ product.brand }}
                     </p>
-                {% else %}
-                    <p>No approved reviews yet.</p>
                 {% endif %}
 
-                <p>
+                <div class="product-rating-panel">
+                    {% if rating_summary.review_count %}
+                        <p class="product-rating">
+                            {{ rating_summary.average_rating|floatformat:1 }}
+                            out of 5
+                            ·
+                            {{ rating_summary.review_count }}
+                            approved review{{ rating_summary.review_count|pluralize }}
+                        </p>
+                    {% else %}
+                        <p>No approved reviews yet.</p>
+                    {% endif %}
+                </div>
+
+                <p class="product-review-invitation">
+                    Tried this product? Share your experience to help
+                    others make an informed choice.
+                </p>
+
+                <div class="product-actions">
                     {% if user_review %}
-                        <a href="{% url 'reviews:review_edit' pk=user_review.pk %}">
+                        <a
+                            class="button"
+                            href="{% url 'reviews:review_edit' pk=user_review.pk %}"
+                        >
                             Edit my review
                         </a>
                     {% else %}
-                        <a href="{% url 'reviews:review_create' slug=product.slug %}">
+                        <a
+                            class="button"
+                            href="{% url 'reviews:review_create' slug=product.slug %}"
+                        >
                             Write a review
                         </a>
                     {% endif %}
-                </p>
-            </header>
+                </div>
+            </div>
+        </div>
 
-            <section aria-labelledby="description-heading">
-                <h2 id="description-heading">About this product</h2>
-                {{ product.description|linebreaks }}
-            </section>
-        </article>
+        <section
+            class="product-description"
+            aria-labelledby="description-heading"
+        >
+            <h2 id="description-heading">About this product</h2>
+            {{ product.description|linebreaks }}
+        </section>
+    </article>
 
-        <section class="product-reviews" aria-labelledby="reviews-heading">
+    <section class="product-reviews" aria-labelledby="reviews-heading">
+        <div class="product-reviews-heading">
             <h2 id="reviews-heading">Customer reviews</h2>
 
-            {% for review in review_page %}
-                <article class="review-card">
+            <span class="catalog-count">
+                {{ rating_summary.review_count }}
+                approved review{{ rating_summary.review_count|pluralize }}
+            </span>
+        </div>
+
+        {% for review in review_page %}
+            <article class="review-card customer-review">
+                <div class="customer-review-heading">
                     <h3>{{ review.title }}</h3>
 
-                    <p>
-                        <strong>{{ review.rating }} out of 5</strong>
-                        · {{ review.author.username }}
-                        ·
-                        <time datetime="{{ review.created_at|date:'c' }}">
-                            {{ review.created_at|date:"F j, Y" }}
-                        </time>
+                    <p class="customer-review-rating">
+                        {{ review.rating }} out of 5
                     </p>
+                </div>
 
-                    <div class="review-body">
-                        {{ review.body|linebreaksbr }}
-                    </div>
-                    {% if review.author_id != user.pk %}
-                        <p>
-                            <a href="{% url 'moderation:report_create' pk=review.pk %}">
+                <p class="customer-review-meta">
+                    <span>{{ review.author.username }}</span>
+                    <span aria-hidden="true">·</span>
+                    <time datetime="{{ review.created_at|date:'c' }}">
+                        {{ review.created_at|date:"F j, Y" }}
+                    </time>
+                </p>
+
+                <div class="review-body">
+                    {{ review.body|linebreaksbr }}
+                </div>
+
+                {% if review.author_id != user.pk %}
+                    <div class="customer-review-footer">
+                        <a href="{% url 'moderation:report_create' pk=review.pk %}">
                             Report review
-                            </a>
-                        </p>
-                    {% endif %}
-                </article>
-            {% empty %}
+                        </a>
+                    </div>
+                {% endif %}
+            </article>
+        {% empty %}
+            <div class="product-reviews-empty">
+                <h3>No reviews to show yet</h3>
                 <p>There are no approved reviews to display.</p>
-            {% endfor %}
+            </div>
+        {% endfor %}
 
-            {% if review_page.has_other_pages %}
-                <nav class="catalog-pagination" aria-label="Review pages">
-                    {% if review_page.has_previous %}
-                        <a href="{% querystring page=review_page.previous_page_number %}">
-                            Previous
-                        </a>
-                    {% endif %}
+        {% if review_page.has_other_pages %}
+            <nav class="catalog-pagination" aria-label="Review pages">
+                {% if review_page.has_previous %}
+                    <a href="{% querystring page=review_page.previous_page_number %}">
+                        Previous
+                    </a>
+                {% endif %}
 
-                    <span>
-                        Page {{ review_page.number }}
-                        of {{ review_page.paginator.num_pages }}
-                    </span>
+                <span>
+                    Page {{ review_page.number }}
+                    of {{ review_page.paginator.num_pages }}
+                </span>
 
-                    {% if review_page.has_next %}
-                        <a href="{% querystring page=review_page.next_page_number %}">
-                            Next
-                        </a>
-                    {% endif %}
-                </nav>
-            {% endif %}
-        </section>
-    </main>
-</body>
-</html>
+                {% if review_page.has_next %}
+                    <a href="{% querystring page=review_page.next_page_number %}">
+                        Next
+                    </a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </section>
+{% endblock %}

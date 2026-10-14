@@ -1,28 +1,25 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Your profile | Product Reviews</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <header>
-        <a class="brand" href="{% url 'home' %}">Product Reviews</a>
+{% extends "base.html" %}
+
+{% block title %}Your profile · Product Reviews{% endblock %}
+
+{% block main_class %}catalog-page{% endblock %}
+
+{% block content %}
+    <header class="catalog-heading">
+        <p class="eyebrow">Your account</p>
+        <h1 id="profile-title">Your profile</h1>
+        <p>Manage your personal details and account security.</p>
     </header>
 
-    <main>
-        <section class="auth-card" aria-labelledby="profile-title">
-            <h1 id="profile-title">Your profile</h1>
-
-            {% if messages %}
-                <div role="status">
-                    {% for message in messages %}
-                        <p class="notice">{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+    <div class="profile-layout">
+        <section
+            class="profile-panel"
+            aria-labelledby="account-details-heading"
+        >
+            <h2 id="account-details-heading">Account details</h2>
+            <p class="profile-description">
+                Your username and email identify your account.
+            </p>
 
             <dl class="account-details">
                 <dt>Username</dt>
@@ -32,20 +29,42 @@
                 <dd>{{ user.email }}</dd>
             </dl>
 
-            <form method="post" action="{% url 'accounts:profile' %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit">Save profile</button>
-            </form>
+            <div class="profile-security">
+                <h3>Account security</h3>
+                <p>Update your password to keep your account secure.</p>
 
-            <p>
-                <a href="{% url 'accounts:password_change' %}">
+                <a
+                    class="button profile-secondary-button"
+                    href="{% url 'accounts:password_change' %}"
+                >
                     Change password
                 </a>
+            </div>
+        </section>
+
+        <section
+            class="auth-card profile-editor"
+            aria-labelledby="profile-edit-heading"
+        >
+            <h2 id="profile-edit-heading">Personal details</h2>
+            <p class="profile-description">
+                Update your first and last name below.
             </p>
 
-            <p><a href="{% url 'home' %}">Back to home</a></p>
+            <form
+                method="post"
+                action="{% url 'accounts:profile' %}"
+                aria-label="Profile form"
+            >
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <div class="profile-form-actions">
+                    <button type="submit">Save profile</button>
+
+                    <a href="{% url 'home' %}">Back to home</a>
+                </div>
+            </form>
         </section>
-    </main>
-</body>
-</html>
+    </div>
+{% endblock %}

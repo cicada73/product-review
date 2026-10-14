@@ -1,35 +1,74 @@
 {% extends "moderation/base.html" %}
 
-{% block title %}Manage account{% endblock %}
+{% block title %}Manage account · Product Reviews{% endblock %}
 
 {% block content %}
-<section class="review-editor" aria-labelledby="account-heading">
-    <h1 id="account-heading">Manage {{ account.username }}</h1>
-
-    <p>
-        Current state:
-        {% if account.is_active %}Active{% else %}Suspended{% endif %}
-    </p>
-
-    <p>
-        Suspension blocks login and invalidates existing sessions.
-        Restoration requires the user to sign in again.
-    </p>
-
-    <p>
-        Existing approved reviews remain public unless separately rejected.
-    </p>
-
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save account action</button>
-    </form>
-
-    <p>
-        <a href="{% url 'moderation:account_decision' pk=account.pk %}">
-            Reload latest account state
+    <nav aria-label="Breadcrumb">
+        <a href="{% url 'moderation:account_list' %}">
+            Back to account management
         </a>
-    </p>
-</section>
+    </nav>
+
+    <div class="moderation-decision-layout">
+        <section
+            class="review-card moderation-review-detail"
+            aria-labelledby="account-heading"
+        >
+            <p class="eyebrow">Account management</p>
+
+            <h1 id="account-heading">Manage {{ account.username }}</h1>
+
+            <p class="moderation-current-status">
+                Current state:
+                <strong>
+                    {% if account.is_active %}
+                        Active
+                    {% else %}
+                        Suspended
+                    {% endif %}
+                </strong>
+            </p>
+
+            <div class="review-guidance">
+                <p>
+                    Suspension blocks login and invalidates existing sessions.
+                    Restoration requires the user to sign in again.
+                </p>
+            </div>
+
+            <div class="moderation-review-body">
+                <h2>Existing reviews</h2>
+                <p>
+                    Existing approved reviews remain public unless
+                    separately rejected.
+                </p>
+            </div>
+        </section>
+
+        <section
+            class="review-editor moderation-decision-panel"
+            aria-labelledby="account-action-heading"
+        >
+            <p class="eyebrow">Account action</p>
+            <h2 id="account-action-heading">Record your decision</h2>
+
+            <form method="post" aria-label="Account action form">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <button type="submit">Save account action</button>
+            </form>
+
+            <div class="moderation-reload">
+                <p>
+                    If the account has changed, reload its latest state
+                    before recording an action.
+                </p>
+
+                <a href="{% url 'moderation:account_decision' pk=account.pk %}">
+                    Reload latest account state
+                </a>
+            </div>
+        </section>
+    </div>
 {% endblock %}

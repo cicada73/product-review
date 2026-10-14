@@ -1,32 +1,36 @@
 {% extends "accounts/base.html" %}
 
-{% block title %}Login temporarily blocked | Product Reviews{% endblock %}
+{% block title %}Login temporarily blocked · Product Reviews{% endblock %}
 
 {% block content %}
-<h1 id="account-title">Login temporarily blocked</h1>
+    <p class="eyebrow">Account protection</p>
 
-<p>
-    Too many unsuccessful login attempts were made for this account
-    from your connection.
-</p>
+    <h1 id="account-title">Login temporarily blocked</h1>
 
-<p>
-    Wait 15 minutes before trying again.
-    Further unsuccessful attempts may extend the waiting period.
-</p>
+    <p class="auth-intro">
+        Too many unsuccessful login attempts were made for this account
+        from your connection.
+    </p>
 
-<p>
-    If you have forgotten your password,
-    you can request a password reset.
-</p>
+    <div class="review-guidance">
+        <p>
+            Wait 15 minutes before trying again.
+            Further unsuccessful attempts may extend the waiting period.
+        </p>
+    </div>
 
-<p>
-    <a href="{% url 'accounts:password_reset' %}">
+    <p class="auth-intro">
+        If you have forgotten your password,
+        you can request a password reset.
+    </p>
+
+    <a class="button" href="{% url 'accounts:password_reset' %}">
         Reset your password
     </a>
-</p>
 
-<p>
-    <a href="{% url 'accounts:login' %}">Return to login</a>
-</p>
+    <div class="auth-links">
+        <a href="{% url 'accounts:login' %}">
+            Return to login
+        </a>
+    </div>
 {% endblock %}
