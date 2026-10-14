@@ -1,71 +1,70 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Products | Product Reviews</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <main class="catalog-page">
-        <nav aria-label="Main navigation">
-            <a href="{% url 'home' %}">Home</a>
-        </nav>
+{% extends "base.html" %}
 
-        <header class="catalog-heading">
+{% block title %}Products · Product Reviews{% endblock %}
+
+{% block main_class %}catalog-page{% endblock %}
+
+{% block content %}
+    <header class="catalog-heading catalog-heading-row">
+        <div>
+            <p class="eyebrow">Discover something worth reviewing</p>
             <h1>Browse products</h1>
             <p>Explore products and find your next purchase.</p>
-            <p>
-                {{ page_obj.paginator.count }}
-                product{{ page_obj.paginator.count|pluralize }}
-                available
-            </p>
-        </header>
-        <form
-    method="get"
-    action="{% url 'catalog:product_list' %}"
-    class="catalog-filters"
-    role="search"
-    aria-label="Find products"
->
-    <div class="catalog-filter-field">
-        <label for="product-search">Search products</label>
-        <input
-            type="search"
-            id="product-search"
-            name="q"
-            value="{{ query }}"
-            maxlength="200"
-            placeholder="Name, brand, or description"
-        >
-    </div>
+        </div>
 
-    <div class="catalog-filter-field">
-        <label for="category-filter">Category</label>
-        <select id="category-filter" name="category">
-            <option value="">All categories</option>
+        <span class="catalog-count">
+            {{ page_obj.paginator.count }}
+            product{{ page_obj.paginator.count|pluralize }}
+            available
+        </span>
+    </header>
 
-            {% for category in categories %}
-                <option
-                    value="{{ category.slug }}"
-                    {% if category.slug == selected_category %}selected{% endif %}
-                >
-                    {{ category.name }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
+    <form
+        method="get"
+        action="{% url 'catalog:product_list' %}"
+        class="catalog-filters"
+        role="search"
+        aria-label="Find products"
+    >
+        <div class="catalog-filter-field">
+            <label for="product-search">Search products</label>
+            <input
+                type="search"
+                id="product-search"
+                name="q"
+                value="{{ query }}"
+                maxlength="200"
+                placeholder="Name, brand, or description"
+            >
+        </div>
 
-    <button type="submit">Apply filters</button>
+        <div class="catalog-filter-field">
+            <label for="category-filter">Category</label>
+            <select id="category-filter" name="category">
+                <option value="">All categories</option>
 
-    <a href="{% url 'catalog:product_list' %}">
-        Clear filters
-    </a>
-</form>
-        <section class="catalog-grid" aria-label="Products">
-            {% for product in page_obj %}
-                <article class="catalog-card">
+                {% for category in categories %}
+                    <option
+                        value="{{ category.slug }}"
+                        {% if category.slug == selected_category %}selected{% endif %}
+                    >
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit">Apply filters</button>
+
+        <a href="{% url 'catalog:product_list' %}">
+            Clear filters
+        </a>
+    </form>
+
+    <section class="catalog-grid" aria-label="Products">
+        {% for product in page_obj %}
+            <article class="catalog-card">
+                <div class="catalog-media">
                     {% if product.image %}
                         <img
                             class="catalog-image"
@@ -73,8 +72,29 @@
                             alt="{{ product.name }}"
                             loading="lazy"
                         >
+                    {% else %}
+                        <div class="catalog-placeholder">
+                            <svg
+                                width="48"
+                                height="48"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.4"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                                focusable="false"
+                            >
+                                <path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/>
+                                <path d="m3 7.5 9 4.5 9-4.5M12 12v9M7.5 5.25l9 4.5"/>
+                            </svg>
+                            <span>No image available</span>
+                        </div>
                     {% endif %}
+                </div>
 
+                <div class="catalog-card-content">
                     <p class="catalog-category">
                         {{ product.category.name }}
                     </p>
@@ -84,46 +104,70 @@
                             {{ product.name }}
                         </a>
                     </h2>
+
                     {% if product.review_count %}
                         <p class="product-rating">
-                            {{ product.average_rating|floatformat:1 }} out of 5·
-                    {{ product.review_count }}
-                    review{{ product.review_count|pluralize }}
+                            {{ product.average_rating|floatformat:1 }} out of 5 ·
+                            {{ product.review_count }}
+                            review{{ product.review_count|pluralize }}
                         </p>
                     {% else %}
-                        <p>No approved reviews yet.</p>
+                        <p class="catalog-rating-empty">
+                            No approved reviews yet.
+                        </p>
                     {% endif %}
+
                     {% if product.brand %}
-                        <p>Brand: {{ product.brand }}</p>
+                        <p class="catalog-brand">
+                            Brand: {{ product.brand }}
+                        </p>
                     {% endif %}
 
-                    <p>{{ product.description|truncatewords:30 }}</p>
-                </article>
-            {% empty %}
+                    <p class="catalog-description">
+                        {{ product.description|truncatewords:30 }}
+                    </p>
+                </div>
+
+                <div class="catalog-card-footer">
+                    <a
+                        class="catalog-detail-link"
+                        href="{% url 'catalog:product_detail' slug=product.slug %}"
+                        aria-label="View details for {{ product.name }}"
+                    >
+                        View details
+                        <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </div>
+            </article>
+        {% empty %}
+            <div class="catalog-empty">
+                <h2>No products found</h2>
                 <p>No products match your search or category selection.</p>
-            {% endfor %}
-        </section>
+                <a class="button" href="{% url 'catalog:product_list' %}">
+                    Browse all products
+                </a>
+            </div>
+        {% endfor %}
+    </section>
 
-        {% if page_obj.has_other_pages %}
-            <nav class="catalog-pagination" aria-label="Product pages">
-                {% if page_obj.has_previous %}
-                    <a href="{% querystring page=page_obj.previous_page_number %}">
-                        Previous
-                    </a>
-                {% endif %}
+    {% if page_obj.has_other_pages %}
+        <nav class="catalog-pagination" aria-label="Product pages">
+            {% if page_obj.has_previous %}
+                <a href="{% querystring page=page_obj.previous_page_number %}">
+                    Previous
+                </a>
+            {% endif %}
 
-                <span>
-                    Page {{ page_obj.number }}
-                    of {{ page_obj.paginator.num_pages }}
-                </span>
+            <span>
+                Page {{ page_obj.number }}
+                of {{ page_obj.paginator.num_pages }}
+            </span>
 
-                {% if page_obj.has_next %}
-                    <a href="{% querystring page=page_obj.next_page_number %}">
-                        Next
-                    </a>
-                {% endif %}
-            </nav>
-        {% endif %}
-    </main>
-</body>
-</html>
+            {% if page_obj.has_next %}
+                <a href="{% querystring page=page_obj.next_page_number %}">
+                    Next
+                </a>
+            {% endif %}
+        </nav>
+    {% endif %}
+{% endblock %}

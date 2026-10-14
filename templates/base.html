@@ -1,0 +1,109 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}Product Reviews{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/site.css' %}?v=4">
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="{% url 'home' %}">
+                Product Reviews
+            </a>
+
+            <nav class="header-links" aria-label="Main navigation">
+                <a href="{% url 'catalog:product_list' %}">
+                    Products
+                </a>
+            </nav>
+
+            <div class="account-controls">
+                {% if user.is_authenticated %}
+                    <p class="account-name">
+                        Signed in as <strong>{{ user.username }}</strong>
+                    </p>
+
+                    <a href="{% url 'accounts:profile' %}">
+                        Your profile
+                    </a>
+
+                    <a href="{% url 'reviews:my_reviews' %}">
+                        My reviews
+                    </a>
+
+                    <form method="post" action="{% url 'accounts:logout' %}">
+                        {% csrf_token %}
+                        <button class="button-quiet" type="submit">
+                            Log out
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}">
+                        Log in
+                    </a>
+
+                    <a class="button" href="{% url 'accounts:signup' %}">
+                        Create an account
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    {% if perms.moderation.moderate_reviews or perms.moderation.manage_reports or perms.moderation.suspend_users %}
+        <div class="workspace-bar">
+            <nav class="workspace-inner" aria-label="Moderation tools">
+                <span class="workspace-label">Workspace</span>
+
+                {% if perms.moderation.moderate_reviews %}
+                    <a href="{% url 'moderation:review_queue' %}">
+                        Review moderation
+                    </a>
+                {% endif %}
+
+                {% if perms.moderation.manage_reports %}
+                    <a href="{% url 'moderation:report_queue' %}">
+                        Reported reviews
+                    </a>
+                {% endif %}
+
+                {% if perms.moderation.suspend_users %}
+                    <a href="{% url 'moderation:account_list' %}">
+                        Account management
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+    {% endif %}
+
+    <main
+        id="main-content"
+        class="{% block main_class %}{% endblock %}"
+        tabindex="-1"
+    >
+        {% if messages %}
+            <div role="status">
+                {% for message in messages %}
+                    <p class="notice">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>Product Reviews · Built for thoughtful decisions.</p>
+            <p>&copy; {% now "Y" %} Product Reviews</p>
+        </div>
+    </footer>
+</body>
+</html>
