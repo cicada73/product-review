@@ -1,5 +1,6 @@
 import re
 import sys
+from urllib.parse import parse_qs, urlsplit
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -13,8 +14,6 @@ from catalog.models import Category, Product
 from reviews.models import Review
 
 from .models import ModerationAction, ReviewReport
-
-from urllib.parse import parse_qs, urlsplit
 
 
 @tag("browser")
@@ -88,7 +87,12 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
         )
         self.field(page, "Username").fill(username)
         self.field(page, "Password").fill(self.password)
-        page.locator("form").get_by_role("button").click()
+
+        page.get_by_role(
+            "button",
+            name="Log in",
+            exact=True,
+        ).click()
 
         expect(page).to_have_url(
             self.live_server_url + reverse("home"),
@@ -108,6 +112,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
         resolution_note = (
             "Investigated the concern and recorded the resolution."
         )
+
         detail_url = (
             self.live_server_url
             + reverse(
@@ -131,6 +136,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                 # A regular user reports another author's review.
                 self.login(reporter_page, self.reporter.username)
                 reporter_page.goto(detail_url)
+
                 reporter_page.get_by_role(
                     "link",
                     name="Report review",
@@ -142,6 +148,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                     reporter_page,
                     "Additional details",
                 ).fill(details)
+
                 reporter_page.get_by_role(
                     "button",
                     name="Submit report",
@@ -158,6 +165,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
 
                 # Reporting does not automatically hide the review.
                 visitor_page.goto(detail_url)
+
                 expect(
                     visitor_page.get_by_role(
                         "heading",
@@ -166,6 +174,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                         exact=True,
                     )
                 ).to_be_visible()
+
                 expect(
                     visitor_page.locator(".product-rating")
                 ).to_contain_text("1 approved review")
@@ -173,6 +182,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                 # A different moderator resolves the report.
                 self.login(moderator_page, self.moderator.username)
                 moderator_page.goto(report_queue_url)
+
                 moderator_page.get_by_role(
                     "link",
                     name="View report",
@@ -191,6 +201,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                     moderator_page,
                     "Resolution note",
                 ).fill(resolution_note)
+
                 moderator_page.get_by_role(
                     "button",
                     name="Save report outcome",
@@ -210,11 +221,13 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                     moderator_page,
                     "Report status",
                 ).select_option("resolved")
+
                 moderator_page.get_by_role(
                     "button",
                     name="Apply filter",
                     exact=True,
                 ).click()
+
                 moderator_page.get_by_role(
                     "link",
                     name="View report",
@@ -228,12 +241,14 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                         exact=True,
                     )
                 ).to_be_visible()
+
                 expect(
                     moderator_page.get_by_text(
                         resolution_note,
                         exact=True,
                     )
                 ).to_be_visible()
+
                 expect(
                     moderator_page.get_by_text(
                         f"Closed by {self.moderator.username}",
@@ -242,6 +257,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                 ).to_be_visible()
 
                 visitor_page.reload()
+
                 expect(
                     visitor_page.get_by_role(
                         "heading",
@@ -250,6 +266,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                         exact=True,
                     )
                 ).to_be_visible()
+
                 expect(
                     visitor_page.locator(".product-rating")
                 ).to_contain_text("4.0 out of 5")
@@ -281,6 +298,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
         page.goto(self.live_server_url + profile_path)
 
         expect(self.field(page, "Username")).to_be_visible()
+
         self.assertEqual(
             urlsplit(page.url).path,
             reverse("accounts:login"),
@@ -311,15 +329,18 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
 
                 # Find and suspend the target.
                 manager_page.goto(account_list_url)
+
                 self.field(
                     manager_page,
                     "Search usernames",
                 ).fill(self.reporter.username)
+
                 manager_page.get_by_role(
                     "button",
                     name="Apply filters",
                     exact=True,
                 ).click()
+
                 manager_page.get_by_role(
                     "link",
                     name="Manage account",
@@ -333,6 +354,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                 self.field(manager_page, "Reason").fill(
                     "Suspended after investigating the browser test concern."
                 )
+
                 manager_page.get_by_role(
                     "button",
                     name="Save account action",
@@ -353,7 +375,12 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                     visited_page,
                     "Password",
                 ).fill(self.password)
-                visited_page.locator("form").get_by_role("button").click()
+
+                visited_page.get_by_role(
+                    "button",
+                    name="Log in",
+                    exact=True,
+                ).click()
 
                 expect(
                     visited_page.locator(".errorlist")
@@ -361,6 +388,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
 
                 # Find the account under Suspended and restore it.
                 manager_page.goto(account_list_url)
+
                 self.field(
                     manager_page,
                     "Search usernames",
@@ -369,11 +397,13 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                     manager_page,
                     "Account state",
                 ).select_option("suspended")
+
                 manager_page.get_by_role(
                     "button",
                     name="Apply filters",
                     exact=True,
                 ).click()
+
                 manager_page.get_by_role(
                     "link",
                     name="Manage account",
@@ -387,6 +417,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                 self.field(manager_page, "Reason").fill(
                     "Restored after reviewing the browser test situation."
                 )
+
                 manager_page.get_by_role(
                     "button",
                     name="Save account action",
@@ -404,6 +435,7 @@ class ModerationBrowserTests(StaticLiveServerTestCase):
                 dormant_page.goto(
                     self.live_server_url + reverse("accounts:profile"),
                 )
+
                 expect(
                     dormant_page.get_by_text(
                         self.reporter.email,
