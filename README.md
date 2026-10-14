@@ -1,384 +1,338 @@
 # Product Review Application
 
-A product review application built incrementally with Django, HTML,
-CSS, and MySQL.
+A Django and MySQL application for discovering products, sharing reviews,
+and managing community moderation.
 
-## Part 1: Project Foundation
+The application includes account security, review approval workflows,
+report handling, and account suspension with audit history. It is built
+as a portfolio project and runs locally.
 
-Implemented:
+## Features
 
-- Django project configuration.
-- Environment-based secret and database settings.
-- MySQL development service through Docker Compose.
-- Custom user model and Django admin registration.
-- Responsive landing page.
-- Database health endpoint.
-- Four automated foundation tests.
-- GitHub Actions workflow.
+### Product discovery
 
-Product listings, public registration, reviews, and moderation workflows
-will be added in later milestones.
+- Search active products by name, brand, or description.
+- Filter by category and paginate results without losing filters.
+- View product descriptions, images, and approved customer reviews.
+- Display average ratings calculated from approved reviews only.
 
-## Requirements
+### Accounts and reviews
 
-- Python 3.12
-- Docker Desktop with Docker Compose
-- Git
+- Register with a unique email address and validated password.
+- Log in, log out, edit profile details, and change or reset passwords.
+- Submit one review per user per product.
+- Edit owned reviews and track their status through My reviews.
+- Return edited reviews to pending approval before public display.
 
-## Local Setup
+### Moderation
 
-Create a virtual environment and install dependencies:
+- Approve or reject reviews with a mandatory reason.
+- Report other users’ approved reviews.
+- Resolve or dismiss reports with a recorded outcome.
+- Suspend and restore eligible accounts.
+- Record moderation state changes and audit entries atomically.
+- Reject stale decisions when the underlying record has changed.
+- Prevent moderators from deciding their own reviews or reports.
 
-```powershell
+### Interface
+
+- Shared navigation and responsive page layouts.
+- Text-based status badges and visible keyboard focus.
+- Consistent forms, validation messages, and empty states.
+- Product image placeholders for items without uploaded images.
+
+## Technology
+
+| Area | Technology |
+| --- | --- |
+| Backend | Python, Django 5.2 |
+| Database | MySQL 8.4 |
+| Frontend | Django templates, HTML, CSS |
+| Authentication | Django authentication and database-backed sessions |
+| Login protection | Django Axes |
+| Image processing | Pillow |
+| Static assets | WhiteNoise |
+| Browser testing | Playwright with Chromium |
+| Automated checks | Django test framework, GitHub Actions |
+| Local database | Docker Compose |
+
+Dependency versions are pinned in `requirements.txt` and
+`requirements-dev.txt`.
+
+## Architecture
+
+The application renders HTML on the server using Django templates.
+Views handle requests and forms validate input. Moderation service
+functions enforce action permissions and coordinate database updates
+with audit records.
+
+| Django app | Responsibility |
+| --- | --- |
+| `core` | Homepage and database health endpoint |
+| `accounts` | Custom user model, authentication, profiles, session security |
+| `catalog` | Categories, products, search, filtering, public ratings |
+| `reviews` | Review submission, editing, ownership, private dashboard |
+| `moderation` | Review decisions, reports, account actions, audit history |
+
+Database constraints enforce rules such as one review per author and
+product, valid ratings, and valid moderation-record states.
+
+Moderation services use transactions and row locking. State changes
+and their audit records succeed or roll back together.
+
+## Important workflow rules
+
+- New reviews start as Pending.
+- Only Approved reviews appear publicly or contribute to ratings.
+- Editing a review returns it to Pending.
+- Reporting a review does not automatically hide it.
+- Closing a report does not change the review’s approval status.
+- Suspending an account blocks login and invalidates existing sessions.
+- Restoring an account requires a fresh login; old sessions stay invalid.
+- Approved reviews remain public after account suspension unless
+  separately rejected.
+- Staff, superusers, and the acting account manager’s own account are
+  excluded from account suspension actions.
+
+## Local setup — Windows
+
+### Prerequisites
+
+- Python 3.12, matching the GitHub Actions environment.
+- Docker Desktop with Docker Compose.
+- Git.
+
+The commands below use Windows Command Prompt from the project folder.
+Virtual-environment activation is optional because commands explicitly
+use its Python executable.
+
+### 1. Get the source
+
+Clone this repository using its GitHub clone URL, then enter the
+`product-review` directory.
+
+### 2. Install dependencies
+
+```bat
 py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-Copy the configuration template:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Replace every placeholder in `.env` with your own generated values.
-
-Start MySQL and apply migrations:
-
-```powershell
-docker compose up -d db
-.\.venv\Scripts\python.exe manage.py migrate
-```
-
-Create an administrator and start Django:
-
-```powershell
-.\.venv\Scripts\python.exe manage.py createsuperuser
-.\.venv\Scripts\python.exe manage.py runserver
-```
-
-## Local URLs
-
-- Homepage: http://127.0.0.1:8000/
-- Database health: http://127.0.0.1:8000/health/
-- Admin: http://127.0.0.1:8000/admin/
-
-## Tests
-
-For local testing, grant access to the separate test database.
-
-Open MySQL:
-
-```powershell
-docker compose exec db mysql -u root -p
-```
-
-Run this SQL, then exit:
-
-```sql
-GRANT ALL PRIVILEGES ON `test_product_reviews`.*
-TO 'review_app'@'%';
-exit;
-```
-
-Run the checks:
-
-```powershell
-.\.venv\Scripts\python.exe manage.py check
-.\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run
-.\.venv\Scripts\python.exe manage.py test core --keepdb
-```
-
-Tests use a separate database named `test_product_reviews`.
-
-## Stopping MySQL
-
-```powershell
-docker compose down
-```
-
-Database data remains in the Docker volume.
-
-## Configuration Notes
-
-Keep `.env` out of Git. Commit only `.env.example`.
-
-MySQL initialization settings apply when its data volume is first created.
-Changing a password in `.env` does not update an existing MySQL account.
-
-This setup is for local development. Production deployment comes later.
-
-
-
-## Part 2: Database Foundation
-
-Implemented:
-
-- Category and Product models with unique slugs.
-- Optional product image uploads.
-- Product archival through the active flag.
-- Review model with pending, approved, and rejected statuses.
-- One review per author per product.
-- Database constraints for ratings and review statuses.
-- Protected deletion of referenced categories, products, and authors.
-- Catalog and review administration.
-- Model constraint tests and demo-data command tests.
-
-Create sample categories and products:
-
-```powershell
-.\.venv\Scripts\python.exe manage.py seed_demo
-```
-
-The command preserves existing records and can be run repeatedly.
-
-The complete test suite currently contains 18 tests.
-
-## Part 3 — User accounts and authentication
-
-Implemented:
-
-- Signup with unique email addresses and password validation.
-- Username/password login and POST-only logout.
-- Profile editing for first and last names.
-- Password changes that preserve the current session and invalidate
-  other sessions.
-- Password reset links with a one-hour expiry.
-- Database-backed sessions with a one-hour lifetime.
-- HttpOnly session cookies and SameSite=Lax cookies.
-- HTTPS-only session and CSRF cookies when DEBUG is disabled.
-- Login protection using Django Axes.
-
-### Login protection
-
-Five failed attempts for the same username and IP address trigger a
-15-minute lockout. Successful login before lockout resets the failure
-counter. Further failed attempts may extend the waiting period.
-
-During local development, client IP detection uses REMOTE_ADDR.
-Proxy settings must be reviewed before production deployment.
-
-To clear a development lockout, replace YOUR_USERNAME below:
-
-```bat
-.\.venv\Scripts\python.exe manage.py axes_reset_username YOUR_USERNAME
-```
-
-### Local password reset emails
-
-Development uses Django's console email backend. Password reset emails
-appear in the runserver terminal; they are not delivered to an inbox.
-
-Production email delivery will be configured during deployment.
-
-### Local database
-
-MySQL is available on localhost port 3307.
-The database container uses port 3306 internally.
-
-### Verification
-
-The full suite currently contains 61 tests covering the foundation,
-catalog, reviews, account flows, CSRF protection, password reset,
-session invalidation, and login lockouts.
-
-```bat
-.\.venv\Scripts\python.exe manage.py test --keepdb --verbosity 2
-```
-
-## Part 4 — Public product catalog
-
-Implemented:
-
-- Public listing of active products, with 12 products per page.
-- Search by product name, brand, or description.
-- Category filtering that works alongside search.
-- Pagination links that preserve search and category selections.
-- Product detail pages with full descriptions and optional images.
-- Approved review counts and average ratings on listings and details.
-- Approved reviews displayed newest first, with 10 reviews per page.
-- Rating summaries calculated across all approved reviews.
-- Inactive products and unknown product/category URLs return 404.
-- Product and review text is HTML-escaped.
-- Homepage link to the catalog.
-
-Pending and rejected reviews are excluded from public review lists,
-counts, and average ratings.
-
-### Routes
-
-- `/products/` — product listing
-- `/products/?q=SEARCH&category=CATEGORY_SLUG` — filtered listing
-- `/products/PRODUCT_SLUG/` — product details and approved reviews
-
-### Verification
-
-The full test suite currently contains 82 tests.
-
-Run against a fresh test database:
-
-```bat
-.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
-```
-
-## Part 5 — Review submission and management
-
-Implemented:
-
-- Authenticated review submission for active products.
-- Ratings from 1 to 5.
-- Review titles between 5 and 200 characters.
-- Review bodies between 20 and 5,000 characters.
-- One review per user per product, enforced by the database.
-- New reviews saved as Pending.
-- Authors can edit their own reviews.
-- Valid edits return reviews to Pending for approval again.
-- Invalid edits leave existing content and approval status unchanged.
-- Author, product, and approval status cannot be chosen through form data.
-- CSRF protection for submission and editing.
-- Private My reviews dashboard with all approval statuses.
-- Dashboard pagination with 10 reviews per page.
-- Reviews of inactive products remain visible to their author,
-  but editing is disabled.
-
-Pending and rejected reviews are excluded from public reviews and
-rating calculations.
-
-### Routes
-
-- `/reviews/` — My reviews dashboard
-- `/reviews/products/PRODUCT_SLUG/new/` — submit a review
-- `/reviews/REVIEW_ID/edit/` — edit your own review
-
-### Verification
-
-The full suite currently contains 119 tests, including form validation,
-submission, ownership checks, reapproval, CSRF protection, dashboard
-privacy, and pagination.
-
-```bat
-.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
-```
-
-## Part 6 — Moderation, reporting, and account management
-
-Implemented:
-
-- Review Moderators role for review decisions and report handling.
-- Account Managers role for suspension and restoration.
-- Permission checks in both views and service functions.
-- Review approval/rejection with mandatory reasons.
-- Moderators cannot decide their own reviews.
-- Reporting of other users' approved reviews on active products.
-- One report per user per review, including after closure.
-- Report resolution/dismissal with moderator, timestamp, and note.
-- Moderators cannot decide their own reports or reports about their reviews.
-- Stale review, report, and account decisions are rejected.
-- State changes and audit entries share atomic transactions.
-- Account suspension/restoration with mandatory reasons.
-- Session versioning prevents restoration from reviving old sessions.
-- Staff, superusers, and the acting manager's own account are protected.
-- Review, report, and audit records are read-only in Django admin.
-- Account activation and session version are read-only in user admin.
-- CSRF protection on action forms.
-
-Reporting and closing reports do not change review approval status.
-Existing approved reviews remain public when an account is suspended
-unless separately rejected.
-
-### Role setup
-
-After applying migrations, run:
-
-```bat
-.\.venv\Scripts\python.exe manage.py setup_roles
-```
-
-This repeatable command sets each role's permissions to its configured
-list. Assign users to groups through Django admin.
-
-Role membership does not automatically grant staff or superuser status.
-
-### Routes
-
-- `/moderation/` — review moderation queue
-- `/moderation/reviews/REVIEW_ID/` — approve/reject a review
-- `/moderation/reviews/REVIEW_ID/report/` — report a public review
-- `/moderation/reports/` — report queue
-- `/moderation/reports/REPORT_ID/` — resolve/dismiss a report
-- `/moderation/accounts/` — account management
-- `/moderation/accounts/USER_ID/` — suspend/restore an account
-
-### Verification
-
-The full suite currently contains 218 tests. Moderation coverage includes
-permissions, database constraints, conflict checks, stale decisions,
-audit rollback, CSRF protection, session invalidation, and admin controls.
-
-```bat
-.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
-```
-
-# Part 7 — Manual usability checks
-
-Mark each item complete only after checking it.
-
-- [ ] Main user flows work using only the keyboard.
-- [ ] Focus is visible on links, buttons, inputs, and selects.
-- [ ] No keyboard traps were found.
-- [ ] Pages remain usable at 320px and 390px widths.
-- [ ] Moderation pages remain usable on narrow screens.
-- [ ] Pages remain usable at 200% browser zoom.
-- [ ] Form fields have understandable visible labels.
-- [ ] Validation errors are clear and preserve entered values.
-- [ ] Review and report statuses are communicated using text.
-
-Issues found and fixes:
-- no issues
-These checks are a basic usability review, not a full accessibility audit.
-
-## Part 7 — Browser testing and quality assurance
-
-Implemented Chromium browser tests covering:
-
-- Homepage-to-product navigation.
-- Search, category filters, and pagination.
-- Signup, profile editing, login, and logout.
-- Review submission, moderator approval, and editing back to Pending.
-- Reporting and report resolution through separate browser sessions.
-- Account suspension/restoration and old-session invalidation.
-- Keyboard operation of the search form.
-- Public-page overflow checks at 320px and 390px widths.
-
-Browser tests use Django's temporary live server and test database.
-GitHub Actions installs Chromium and its Linux dependencies.
-
-Manual keyboard, mobile, zoom, and form checks are recorded in
-`docs/part-7-manual-checks.md`. These are basic usability checks,
-not a full accessibility audit.
-
-### Development setup
-
-```bat
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe -m playwright install chromium
 ```
 
-### Run tests
+### 3. Configure the environment
 
-All 228 tests:
+For a new checkout, copy the example configuration:
 
 ```bat
-.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2
+copy .env.example .env
 ```
 
-Only the 10 browser tests:
+Generate a secret key:
+
+```bat
+.\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+
+Set `DJANGO_SECRET_KEY` in `.env` to the generated value. Replace the
+application and root database password placeholders with your own values.
+
+Use these local connection settings:
+
+```dotenv
+DJANGO_DEBUG=true
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+
+MYSQL_DATABASE=product_reviews
+MYSQL_USER=review_app
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3307
+```
+
+Keep `.env` private. Commit only `.env.example` with placeholder secrets.
+
+### 4. Start MySQL
+
+Start Docker Desktop, then run:
+
+```bat
+docker compose up -d db
+docker compose ps
+```
+
+Wait until the database service is healthy.
+
+MySQL is exposed on `127.0.0.1:3307`. Inside the container it listens
+on port `3306`.
+
+### 5. Initialize the application
+
+```bat
+.\.venv\Scripts\python.exe manage.py migrate
+.\.venv\Scripts\python.exe manage.py setup_roles
+.\.venv\Scripts\python.exe manage.py seed_demo
+.\.venv\Scripts\python.exe manage.py createsuperuser
+.\.venv\Scripts\python.exe manage.py collectstatic --noinput
+```
+
+`seed_demo` creates sample categories and products and can be run
+repeatedly without replacing existing records.
+
+`setup_roles` creates or updates the configured moderation groups.
+
+### 6. Run Django
+
+```bat
+.\.venv\Scripts\python.exe manage.py runserver
+```
+
+| Page | Local URL |
+| --- | --- |
+| Homepage | http://127.0.0.1:8000/ |
+| Product catalog | http://127.0.0.1:8000/products/ |
+| My reviews | http://127.0.0.1:8000/reviews/ |
+| Review moderation | http://127.0.0.1:8000/moderation/ |
+| Report queue | http://127.0.0.1:8000/moderation/reports/ |
+| Account management | http://127.0.0.1:8000/moderation/accounts/ |
+| Django admin | http://127.0.0.1:8000/admin/ |
+| Database health | http://127.0.0.1:8000/health/ |
+
+Authenticated and moderation pages require the appropriate access.
+
+## Demonstrating roles
+
+Create separate regular accounts through signup. Sign in to Django admin
+with the superuser and assign the relevant groups:
+
+| Group | Access |
+| --- | --- |
+| Review Moderators | Review approval/rejection and report handling |
+| Account Managers | Account suspension and restoration |
+
+Group membership does not automatically grant staff or superuser status.
+These roles use the application’s moderation pages.
+
+Use separate browser profiles or private windows to demonstrate an
+author, moderator, and account manager independently.
+
+## Tests
+
+The latest verified suite contains **228 tests**, including **10 Chromium
+browser tests**.
+
+Coverage includes database constraints, authentication, permissions,
+CSRF protection, review visibility, stale moderation decisions, audit
+rollback, and session invalidation.
+
+Browser tests exercise complete workflows, keyboard search, and public
+page layouts at 320px and 390px widths.
+
+### Test database access
+
+The local application database user needs permission to create and use
+Django’s separate test database.
+
+Open MySQL:
+
+```bat
+docker compose exec db mysql -u root -p
+```
+
+Enter the root password from `.env`, then run:
+
+```sql
+GRANT ALL PRIVILEGES ON `test_product_reviews`.*
+TO 'review_app'@'%';
+
+exit;
+```
+
+These names assume the example database and username above.
+
+### Run checks and the complete suite
+
+```bat
+.\.venv\Scripts\python.exe manage.py check --database default
+.\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run
+.\.venv\Scripts\python.exe manage.py collectstatic --noinput
+.\.venv\Scripts\python.exe manage.py test --keepdb --verbosity 2
+```
+
+Collect static files before testing so the static-file manifest is
+available when pages render with debug disabled.
+
+Run only browser tests:
 
 ```bat
 .\.venv\Scripts\python.exe manage.py test --tag=browser --keepdb --verbosity 2
 ```
 
-Application tests without browser execution:
+Run application tests without browser execution:
 
 ```bat
 .\.venv\Scripts\python.exe manage.py test --exclude-tag=browser --keepdb --verbosity 2
 ```
+
+For a fresh test-database run, replace `--keepdb` with `--noinput`.
+The test database is separate from the development database.
+
+Manual usability checks are recorded in
+[the usability checklist](docs/part-7-manual-checks.md).
+These checks are not a full accessibility audit.
+
+## Continuous integration
+
+GitHub Actions runs on pushes and pull requests. It uses Python 3.12
+and a MySQL 8.4 service to:
+
+- Check Django configuration and migration consistency.
+- Apply migrations and collect static files.
+- Install Chromium and its browser dependencies.
+- Run application and browser tests.
+
+CI uses MySQL port `3306`; local development uses `3307`.
+
+## Local authentication notes
+
+Five failed login attempts for the same username and IP address trigger
+a 15-minute lockout. Additional failed attempts may extend the waiting
+period.
+
+To clear a development lockout:
+
+```bat
+.\.venv\Scripts\python.exe manage.py axes_reset_username YOUR_USERNAME
+```
+
+Password-reset emails use Django’s console email backend and appear in
+the server terminal. They are not delivered to an inbox.
+
+Sessions have a one-hour lifetime. Password-reset links expire after
+one hour.
+
+## Deployment status
+
+This project is intended for local demonstration and is not currently
+deployed.
+
+Deployment preparation includes WhiteNoise, collected static assets,
+and a separate `config.settings_production` module with HTTPS enforcement
+and debug disabled.
+
+Hosting, trusted proxy configuration, production email delivery,
+persistent uploaded-image storage, backups, and live HTTPS verification
+remain future work. HSTS is intentionally disabled until HTTPS is verified.
+
+## Stopping the application
+
+Stop Django with `Ctrl + C`, then stop MySQL:
+
+```bat
+docker compose down
+```
+
+Database records remain in the Docker volume. Avoid `docker compose down -v`
+unless you intend to delete that database volume.
+
+MySQL initialization variables apply when the volume is first created.
+Changing a password in `.env` does not change an existing MySQL account’s
+password.
