@@ -1,37 +1,33 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Log in | Product Reviews</title>
-    <link rel="stylesheet" href="{% static 'css/site.css' %}">
-</head>
-<body>
-    <header>
-        <a class="brand" href="{% url 'home' %}">Product Reviews</a>
-    </header>
+{% extends "base.html" %}
 
-    <main>
-        <section class="auth-card" aria-labelledby="login-title">
-            <h1 id="login-title">Log in</h1>
-            <p>Welcome back to Product Reviews.</p>
+{% block title %}Log in · Product Reviews{% endblock %}
 
-            <form method="post" action="{% url 'accounts:login' %}">
-                {% csrf_token %}
-                {{ form.as_p }}
+{% block content %}
+    <section class="auth-card" aria-labelledby="login-title">
+        <p class="eyebrow">Welcome back</p>
 
-                {% if next %}
-                    <input type="hidden" name="next" value="{{ next }}">
-                {% endif %}
+        <h1 id="login-title">Log in</h1>
 
-                <button type="submit">Log in</button>
-            </form>
-            <p>
-                <a href="{% url 'accounts:password_reset' %}">
-                    Forgot your password?
-                </a>
-            </p>
+        <p class="auth-intro">
+            Continue discovering products and sharing your experience.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            <button type="submit">Log in</button>
+        </form>
+
+        <div class="auth-links">
+            <a href="{% url 'accounts:password_reset' %}">
+                Forgot your password?
+            </a>
 
             <p>
                 New here?
@@ -40,8 +36,9 @@
                 </a>
             </p>
 
-            <p><a href="{% url 'home' %}">Back to home</a></p>
-        </section>
-    </main>
-</body>
-</html>
+            <a class="auth-back" href="{% url 'home' %}">
+                Back to home
+            </a>
+        </div>
+    </section>
+{% endblock %}
